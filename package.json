@@ -1,0 +1,21 @@
+{
+    "name": "open-archive",
+    "private": true,
+    "scripts": {
+        "dev": "pnpm --filter \"./packages/*\" --parallel dev",
+        "build": "pnpm --filter \"./packages/*\" --parallel build"
+    },
+    "devDependencies": {
+        "typescript": "^5.0.0"
+    },
+    "packageManager": "pnpm@10.13.1",
+    "engines": {
+        "node": ">=18.0.0",
+        "pnpm": ">=8.0.0"
+    },
+    "pnpm": {
+        "onlyBuiltDependencies": [
+            "esbuild"
+        ]
+    }
+}
