@@ -2,16 +2,17 @@
     "name": "open-archive",
     "private": true,
     "scripts": {
-        "dev": "pnpm --filter \"./packages/*\" --parallel dev",
+        "dev": "dotenv -- pnpm --filter \"./packages/*\" --parallel dev",
         "build": "pnpm --filter \"./packages/*\" --parallel build"
     },
     "devDependencies": {
-        "typescript": "^5.0.0"
+        "dotenv-cli": "8.0.0",
+        "typescript": "5.8.3"
     },
     "packageManager": "pnpm@10.13.1",
     "engines": {
-        "node": ">=18.0.0",
-        "pnpm": ">=8.0.0"
+        "node": ">=22.0.0",
+        "pnpm": "10.13.1"
     },
     "pnpm": {
         "onlyBuiltDependencies": [

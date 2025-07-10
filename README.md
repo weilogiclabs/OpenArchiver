@@ -57,7 +57,7 @@ Open Archive is built on a modern, scalable, and maintainable technology stack:
 3.  **Run the application:**
 
     ```bash
-    docker-compose up -d
+    docker compose up -d
     ```
 
     This command will build the necessary Docker images and start all the services (frontend, backend, database, etc.) in the background.
