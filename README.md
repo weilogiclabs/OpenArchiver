@@ -1,12 +1,15 @@
 # Open Archive
 
+> [!WARNING]
+> This project is currently in active development and has not yet reached a stable General Availability (GA) release. It is not recommended for use in production environments. We welcome contributions from the community to help us accelerate development and improve the platform. Please see our [Contributing](#contributing) section for more details.
+
 **A secure, sovereign, and affordable open-source platform for email archiving and eDiscovery.**
 
-Open Archive empowers individuals and organizations to take control of their digital communication history. It provides a robust, self-hosted solution for ingesting, storing, and searching emails from major platforms, ensuring you have a permanent, tamper-proof record of your most critical data, free from vendor lock-in.
+Open Archive enables individuals and organizations to take control of their digital communication history. It provides a robust, self-hosted solution for ingesting, storing, indexing, and searching emails from major platforms, ensuring a permanent, tamper-proof record of your most critical data, free from vendor lock-in.
 
 ## Vision
 
-To provide individuals and organizations with a secure, sovereign, and affordable platform to preserve and access their digital communication history, free from vendor lock-in.
+To provide individuals and organizations with a secure, sovereign, and affordable platform to preserve and access their digital communication history.
 
 ## Key Features
 

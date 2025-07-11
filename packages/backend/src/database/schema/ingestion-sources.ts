@@ -11,7 +11,8 @@ export const ingestionStatusEnum = pgEnum('ingestion_status', [
     'paused',
     'error',
     'pending_auth',
-    'syncing'
+    'syncing',
+    'auth_success'
 ]);
 
 export const ingestionSources = pgTable('ingestion_sources', {
