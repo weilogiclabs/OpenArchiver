@@ -9,11 +9,17 @@ const BASE_URL = '/api/v1'; // Using a relative URL for proxying
  * @param options The standard Fetch API options.
  * @returns A Promise that resolves to the Fetch Response.
  */
-export const api = async (url: string, options: RequestInit = {}): Promise<Response> => {
+type Fetch = typeof fetch;
+
+export const api = async (
+    url: string,
+    options: RequestInit = {},
+    customFetch: Fetch = fetch
+): Promise<Response> => {
     const { accessToken } = get(authStore);
 
     const defaultHeaders: HeadersInit = {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
     };
 
     if (accessToken) {
@@ -24,9 +30,9 @@ export const api = async (url: string, options: RequestInit = {}): Promise<Respo
         ...options,
         headers: {
             ...defaultHeaders,
-            ...options.headers,
-        },
+            ...options.headers
+        }
     };
 
-    return fetch(`${BASE_URL}${url}`, mergedOptions);
+    return customFetch(`${BASE_URL}${url}`, mergedOptions);
 };

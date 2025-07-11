@@ -1,8 +1,10 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import { AuthController } from './api/controllers/auth.controller';
+import { IngestionController } from './api/controllers/ingestion.controller';
 import { requireAuth } from './api/middleware/requireAuth';
 import { createAuthRouter } from './api/routes/auth.routes';
+import { createIngestionRouter } from './api/routes/ingestion.routes';
 import { AuthService } from './services/AuthService';
 import { AdminUserService } from './services/UserService';
 
@@ -27,6 +29,7 @@ if (!PORT_BACKEND || !JWT_SECRET || !JWT_EXPIRES_IN) {
 const userService = new AdminUserService();
 const authService = new AuthService(userService, JWT_SECRET, JWT_EXPIRES_IN);
 const authController = new AuthController(authService);
+const ingestionController = new IngestionController();
 
 // --- Express App Initialization ---
 const app = express();
@@ -36,13 +39,15 @@ app.use(express.json()); // For parsing application/json
 
 // --- Routes ---
 const authRouter = createAuthRouter(authController);
+const ingestionRouter = createIngestionRouter(ingestionController, authService);
 app.use('/v1/auth', authRouter);
+app.use('/v1/ingestion-sources', ingestionRouter);
 
 // Example of a protected route
 app.get('/v1/protected', requireAuth(authService), (req, res) => {
     res.json({
         message: 'You have accessed a protected route!',
-        user: req.user, // The user payload is attached by the requireAuth middleware
+        user: req.user // The user payload is attached by the requireAuth middleware
     });
 });
 

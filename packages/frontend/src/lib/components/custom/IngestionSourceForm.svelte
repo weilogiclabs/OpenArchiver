@@ -1,0 +1,101 @@
+<script lang="ts">
+	import type { IngestionSource, CreateIngestionSourceDto } from '@open-archive/types';
+	import { Button } from '$lib/components/ui/button';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Input } from '$lib/components/ui/input';
+	import { Label } from '$lib/components/ui/label';
+	import * as Select from '$lib/components/ui/select';
+
+	let {
+		source = null,
+		onSubmit
+	}: {
+		source?: IngestionSource | null;
+		onSubmit: (data: CreateIngestionSourceDto) => void;
+	} = $props();
+
+	const providerOptions = [
+		{ value: 'google_workspace', label: 'Google Workspace' },
+		{ value: 'microsoft_365', label: 'Microsoft 365' },
+		{ value: 'generic_imap', label: 'Generic IMAP' }
+	];
+
+	let formData = $state({
+		name: source?.name ?? '',
+		provider: source?.provider ?? 'google_workspace',
+		providerConfig: source?.providerConfig ?? {}
+	});
+
+	const triggerContent = $derived(
+		providerOptions.find((p) => p.value === formData.provider)?.label ?? 'Select a provider'
+	);
+
+	const handleSubmit = (event: Event) => {
+		event.preventDefault();
+		onSubmit(formData);
+	};
+</script>
+
+<form onsubmit={handleSubmit} class="grid gap-4 py-4">
+	<div class="grid grid-cols-4 items-center gap-4">
+		<Label for="name" class="text-right">Name</Label>
+		<Input id="name" bind:value={formData.name} class="col-span-3" />
+	</div>
+	<div class="grid grid-cols-4 items-center gap-4">
+		<Label for="provider" class="text-right">Provider</Label>
+		<Select.Root name="provider" bind:value={formData.provider} type="single">
+			<Select.Trigger class="col-span-3">
+				{triggerContent}
+			</Select.Trigger>
+			<Select.Content>
+				{#each providerOptions as option}
+					<Select.Item value={option.value}>{option.label}</Select.Item>
+				{/each}
+			</Select.Content>
+		</Select.Root>
+	</div>
+
+	{#if formData.provider === 'google_workspace' || formData.provider === 'microsoft_365'}
+		<div class="grid grid-cols-4 items-center gap-4">
+			<Label for="clientId" class="text-right">Client ID</Label>
+			<Input id="clientId" bind:value={formData.providerConfig.clientId} class="col-span-3" />
+		</div>
+		<div class="grid grid-cols-4 items-center gap-4">
+			<Label for="clientSecret" class="text-right">Client Secret</Label>
+			<Input
+				id="clientSecret"
+				bind:value={formData.providerConfig.clientSecret}
+				class="col-span-3"
+			/>
+		</div>
+		<div class="grid grid-cols-4 items-center gap-4">
+			<Label for="redirectUri" class="text-right">Redirect URI</Label>
+			<Input id="redirectUri" bind:value={formData.providerConfig.redirectUri} class="col-span-3" />
+		</div>
+	{:else if formData.provider === 'generic_imap'}
+		<div class="grid grid-cols-4 items-center gap-4">
+			<Label for="host" class="text-right">Host</Label>
+			<Input id="host" bind:value={formData.providerConfig.host} class="col-span-3" />
+		</div>
+		<div class="grid grid-cols-4 items-center gap-4">
+			<Label for="port" class="text-right">Port</Label>
+			<Input id="port" type="number" bind:value={formData.providerConfig.port} class="col-span-3" />
+		</div>
+		<div class="grid grid-cols-4 items-center gap-4">
+			<Label for="username" class="text-right">Username</Label>
+			<Input id="username" bind:value={formData.providerConfig.username} class="col-span-3" />
+		</div>
+		<div class="grid grid-cols-4 items-center gap-4">
+			<Label for="password" class="text-right">Password</Label>
+			<Input
+				id="password"
+				type="password"
+				bind:value={formData.providerConfig.password}
+				class="col-span-3"
+			/>
+		</div>
+	{/if}
+	<Dialog.Footer>
+		<Button type="submit">Save changes</Button>
+	</Dialog.Footer>
+</form>
