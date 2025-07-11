@@ -6,7 +6,7 @@
 	import { MoreHorizontal } from 'lucide-svelte';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import IngestionSourceForm from '$lib/components/custom/IngestionSourceForm.svelte';
-	import { api } from '$lib/api';
+	import { api } from '$lib/api.client';
 	import type { IngestionSource, CreateIngestionSourceDto } from '@open-archive/types';
 
 	let { data }: { data: PageData } = $props();
@@ -69,7 +69,7 @@
 	};
 </script>
 
-<div class="container mx-auto py-10">
+<div class="">
 	<div class="mb-4 flex items-center justify-between">
 		<h1 class="text-2xl font-bold">Ingestion Sources</h1>
 		<Button onclick={openCreateDialog}>Create New</Button>

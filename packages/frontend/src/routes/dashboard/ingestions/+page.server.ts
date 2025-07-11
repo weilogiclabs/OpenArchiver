@@ -1,10 +1,10 @@
-import { api } from '$lib/api';
-import type { PageLoad } from './$types';
+import { api } from '$lib/server/api';
+import type { PageServerLoad } from './$types';
 import type { IngestionSource } from '@open-archive/types';
 
-export const load: PageLoad = async ({ fetch }) => {
+export const load: PageServerLoad = async (event) => {
     try {
-        const response = await api('/ingestion-sources', {}, fetch);
+        const response = await api('/ingestion-sources', event);
         if (!response.ok) {
             throw new Error(`Failed to fetch ingestion sources: ${response.statusText}`);
         }

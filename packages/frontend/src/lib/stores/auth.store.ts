@@ -13,48 +13,33 @@ const initialValue: AuthState = {
 };
 
 // Function to get the initial state from localStorage
-const getInitialState = (): AuthState => {
-    if (!browser) {
-        return initialValue;
-    }
-
-    const storedToken = localStorage.getItem('accessToken');
-    const storedUser = localStorage.getItem('user');
-
-    if (storedToken && storedUser) {
-        try {
-            return {
-                accessToken: storedToken,
-                user: JSON.parse(storedUser),
-            };
-        } catch (e) {
-            console.error('Failed to parse user from localStorage', e);
-            return initialValue;
-        }
-    }
-
-    return initialValue;
-};
-
 const createAuthStore = () => {
-    const { subscribe, set } = writable<AuthState>(getInitialState());
+    const { subscribe, set } = writable<AuthState>(initialValue);
 
     return {
         subscribe,
         login: (accessToken: string, user: Omit<User, 'passwordHash'>) => {
             if (browser) {
-                localStorage.setItem('accessToken', accessToken);
-                localStorage.setItem('user', JSON.stringify(user));
+                document.cookie = `accessToken=${accessToken}; path=/; max-age=604800; samesite=strict`;
             }
             set({ accessToken, user });
         },
         logout: () => {
             if (browser) {
-                localStorage.removeItem('accessToken');
-                localStorage.removeItem('user');
+                document.cookie = 'accessToken=; path=/; max-age=-1; samesite=strict';
             }
             set(initialValue);
         },
+        syncWithServer: (
+            user: Omit<User, 'passwordHash'> | null,
+            accessToken: string | null
+        ) => {
+            if (user && accessToken) {
+                set({ accessToken, user });
+            } else {
+                set(initialValue);
+            }
+        }
     };
 };
 
