@@ -57,4 +57,11 @@ export interface UpdateIngestionSourceDto {
     provider?: IngestionProvider;
     status?: IngestionStatus;
     providerConfig?: Record<string, any>;
+    lastSyncStartedAt?: Date;
+    lastSyncFinishedAt?: Date;
+    lastSyncStatusMessage?: string;
+}
+
+export interface IInitialImportJob {
+    ingestionSourceId: string;
 }

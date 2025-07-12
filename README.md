@@ -66,7 +66,7 @@ Open Archive is built on a modern, scalable, and maintainable technology stack:
     This command will build the necessary Docker images and start all the services (frontend, backend, database, etc.) in the background.
 
 4.  **Access the application:**
-    Once the services are running, you can access the Open Archive web interface by navigating to `http://localhost:5173` in your web browser.
+    Once the services are running, you can access the Open Archive web interface by navigating to `http://localhost:3000` in your web browser.
 
 ## Contributing
 

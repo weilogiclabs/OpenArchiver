@@ -7,24 +7,12 @@ import type {
     IngestionCredentials
 } from '@open-archive/types';
 import { eq } from 'drizzle-orm';
-import { Queue } from 'bullmq';
 import { CryptoService } from './CryptoService';
 import { EmailProviderFactory } from './EmailProviderFactory';
+import { ingestionQueue, indexingQueue } from '../jobs/queues';
+import { StorageService } from './StorageService';
+import type { IInitialImportJob } from '@open-archive/types';
 
-// This assumes you have a BullMQ queue instance exported from somewhere
-// In a real setup, this would be injected or imported from a central place.
-let initialImportQueue: Queue;
-
-// TODO: Initialize and connect to the actual BullMQ queue.
-// For now, we'll use a mock for demonstration purposes.
-if (process.env.NODE_ENV !== 'production') {
-    initialImportQueue = {
-        add: async (name: string, data: any) => {
-            console.log(`Mock Queue: Job '${name}' added with data:`, data);
-            return Promise.resolve({} as any);
-        }
-    } as Queue;
-}
 
 export class IngestionService {
     private static decryptSource(source: typeof ingestionSources.$inferSelect): IngestionSource {
@@ -111,8 +99,52 @@ export class IngestionService {
     public static async triggerInitialImport(id: string): Promise<IngestionSource> {
         const source = await this.findById(id);
 
-        await initialImportQueue.add('initial-import', { ingestionSourceId: source.id });
+        await ingestionQueue.add('initial-import', { ingestionSourceId: source.id });
 
         return await this.update(id, { status: 'syncing' });
+    }
+
+    public async performBulkImport(job: IInitialImportJob): Promise<void> {
+        const { ingestionSourceId } = job;
+        const source = await IngestionService.findById(ingestionSourceId);
+
+        if (!source) {
+            throw new Error(`Ingestion source ${ingestionSourceId} not found.`);
+        }
+
+        console.log(`Starting bulk import for source: ${source.name} (${source.id})`);
+        await IngestionService.update(ingestionSourceId, {
+            status: 'syncing',
+            lastSyncStartedAt: new Date()
+        });
+
+        const connector = EmailProviderFactory.createConnector(source);
+        const storage = new StorageService();
+
+        try {
+            for await (const email of connector.fetchEmails()) {
+                const filePath = `${source.id}/${email.id}.eml`;
+                await storage.put(filePath, Buffer.from(email.body, 'utf-8'));
+                await indexingQueue.add('index-email', {
+                    filePath,
+                    ingestionSourceId: source.id
+                });
+            }
+
+            await IngestionService.update(ingestionSourceId, {
+                status: 'active',
+                lastSyncFinishedAt: new Date(),
+                lastSyncStatusMessage: 'Successfully completed bulk import.'
+            });
+            console.log(`Bulk import finished for source: ${source.name} (${source.id})`);
+        } catch (error) {
+            console.error(`Bulk import failed for source: ${source.name} (${source.id})`, error);
+            await IngestionService.update(ingestionSourceId, {
+                status: 'error',
+                lastSyncFinishedAt: new Date(),
+                lastSyncStatusMessage: error instanceof Error ? error.message : 'An unknown error occurred.'
+            });
+            throw error; // Re-throw to allow BullMQ to handle the job failure
+        }
     }
 }
