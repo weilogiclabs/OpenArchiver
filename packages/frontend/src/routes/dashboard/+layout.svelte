@@ -4,9 +4,11 @@
 	import { authStore } from '$lib/stores/auth.store';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import ThemeSwitcher from '$lib/components/custom/ThemeSwitcher.svelte';
 	const navItems = [
 		{ href: '/dashboard', label: 'Dashboard' },
-		{ href: '/dashboard/ingestions', label: 'Ingestions' }
+		{ href: '/dashboard/ingestions', label: 'Ingestions' },
+		{ href: '/dashboard/archived-emails', label: 'Archived emails' }
 	];
 	let { children } = $props();
 	function handleLogout() {
@@ -17,7 +19,10 @@
 
 <header class="bg-background sticky top-0 z-40 border-b">
 	<div class="container mx-auto flex h-16 flex-row items-center justify-between">
-		<a href="/dashboard" class="text-primary text-lg font-semibold"> OpenArchive </a>
+		<a href="/dashboard" class="text-primary flex flex-row items-center gap-2 font-bold">
+			<img src="/logos/logo-sq.svg" alt="OpenArchive Logo" class="h-8 w-8" />
+			<span>OpenArchive</span>
+		</a>
 		<NavigationMenu.Root>
 			<NavigationMenu.List class="flex items-center space-x-4">
 				{#each navItems as item}
@@ -31,7 +36,10 @@
 				{/each}
 			</NavigationMenu.List>
 		</NavigationMenu.Root>
-		<Button onclick={handleLogout} variant="outline">Logout</Button>
+		<div class="flex items-center gap-4">
+			<ThemeSwitcher />
+			<Button onclick={handleLogout} variant="outline">Logout</Button>
+		</div>
 	</div>
 </header>
 

@@ -1,6 +1,7 @@
-import type { GoogleWorkspaceCredentials } from '@open-archive/types';
-import type { IEmailConnector, EmailObject } from '../EmailProviderFactory';
+import type { GoogleWorkspaceCredentials, EmailObject, EmailAddress } from '@open-archive/types';
+import type { IEmailConnector } from '../EmailProviderFactory';
 import { google } from 'googleapis';
+import { simpleParser, ParsedMail, Attachment, AddressObject } from 'mailparser';
 import { OAuth2Client } from 'google-auth-library';
 import type { gmail_v1 } from 'googleapis';
 
@@ -44,13 +45,43 @@ export class GoogleConnector implements IEmailConnector {
                     const msg = await gmail.users.messages.get({
                         userId: 'me',
                         id: message.id,
-                        format: 'raw',
+                        format: 'raw'
                     });
                     if (msg.data.raw) {
+                        const emlBuffer = Buffer.from(msg.data.raw, 'base64');
+                        const parsedEmail: ParsedMail = await simpleParser(emlBuffer);
+                        const attachments = parsedEmail.attachments.map((attachment: Attachment) => ({
+                            filename: attachment.filename || 'untitled',
+                            contentType: attachment.contentType,
+                            size: attachment.size,
+                            content: attachment.content as Buffer
+                        }));
+
+                        const mapAddresses = (
+                            addresses: AddressObject | AddressObject[] | undefined
+                        ): EmailAddress[] => {
+                            if (!addresses) return [];
+                            const addressArray = Array.isArray(addresses)
+                                ? addresses
+                                : [addresses];
+                            return addressArray.flatMap(a =>
+                                a.value.map(v => ({ name: v.name, address: v.address || '' }))
+                            );
+                        };
+
                         yield {
                             id: msg.data.id!,
-                            headers: msg.data.payload?.headers || [],
-                            body: Buffer.from(msg.data.raw, 'base64').toString('utf-8'),
+                            from: mapAddresses(parsedEmail.from),
+                            to: mapAddresses(parsedEmail.to),
+                            cc: mapAddresses(parsedEmail.cc),
+                            bcc: mapAddresses(parsedEmail.bcc),
+                            subject: parsedEmail.subject || '',
+                            body: parsedEmail.text || '',
+                            html: parsedEmail.html || '',
+                            headers: parsedEmail.headers as any,
+                            attachments,
+                            receivedAt: parsedEmail.date || new Date(),
+                            eml: emlBuffer
                         };
                     }
                 }

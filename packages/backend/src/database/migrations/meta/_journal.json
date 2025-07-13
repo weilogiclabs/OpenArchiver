@@ -8,6 +8,27 @@
       "when": 1752225352591,
       "tag": "0000_amusing_namora",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1752326803882,
+      "tag": "0001_odd_night_thrasher",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1752332648392,
+      "tag": "0002_lethal_quentin_quire",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1752332967084,
+      "tag": "0003_petite_wrecker",
+      "breakpoints": true
     }
   ]
 }

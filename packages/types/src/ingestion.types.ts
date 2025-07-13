@@ -14,7 +14,6 @@ export interface GenericImapCredentials {
     port: number;
     secure: boolean;
     username: string;
-    // Password will be encrypted and stored securely
     password?: string;
 }
 

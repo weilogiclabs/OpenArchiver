@@ -6,5 +6,7 @@ import 'dotenv/config';
 export const connection = {
     host: process.env.REDIS_HOST || 'localhost',
     port: (process.env.REDIS_PORT && parseInt(process.env.REDIS_PORT, 10)) || 6379,
-    maxRetriesPerRequest: null
+    password: process.env.REDIS_PASSWORD,
+    maxRetriesPerRequest: null,
+    tls: {} // Enable TLS for Upstash
 };

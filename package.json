@@ -3,7 +3,8 @@
     "private": true,
     "scripts": {
         "dev": "dotenv -- pnpm --filter \"./packages/*\" --parallel dev",
-        "build": "pnpm --filter \"./packages/*\" --parallel build"
+        "build": "pnpm --filter \"./packages/*\" --parallel build",
+        "start:workers": "dotenv -- pnpm --filter \"./packages/backend\" start:ingestion-worker && -- pnpm --filter \"./packages/backend\" start:indexing-worker"
     },
     "devDependencies": {
         "dotenv-cli": "8.0.0",

@@ -2,18 +2,12 @@ import type {
     IngestionSource,
     GoogleWorkspaceCredentials,
     Microsoft365Credentials,
-    GenericImapCredentials
+    GenericImapCredentials,
+    EmailObject
 } from '@open-archive/types';
 import { GoogleConnector } from './ingestion-connectors/GoogleConnector';
 import { MicrosoftConnector } from './ingestion-connectors/MicrosoftConnector';
 import { ImapConnector } from './ingestion-connectors/ImapConnector';
-
-// This is a placeholder for a real email object structure
-export interface EmailObject {
-    id: string;
-    headers: Record<string, any> | any[];
-    body: string;
-}
 
 // Define a common interface for all connectors
 export interface IEmailConnector {

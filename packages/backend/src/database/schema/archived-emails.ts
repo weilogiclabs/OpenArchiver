@@ -1,11 +1,13 @@
 import { relations } from 'drizzle-orm';
 import { boolean, jsonb, pgTable, text, timestamp, uuid, bigint } from 'drizzle-orm/pg-core';
-import { custodians } from './custodians';
+import { ingestionSources } from './ingestion-sources';
 
 export const archivedEmails = pgTable('archived_emails', {
     id: uuid('id').primaryKey().defaultRandom(),
-    custodianId: uuid('custodian_id').notNull().references(() => custodians.id, { onDelete: 'cascade' }),
-    messageIdHeader: text('message_id_header').notNull(),
+    ingestionSourceId: uuid('ingestion_source_id')
+        .notNull()
+        .references(() => ingestionSources.id, { onDelete: 'cascade' }),
+    messageIdHeader: text('message_id_header'),
     sentAt: timestamp('sent_at', { withTimezone: true }).notNull(),
     subject: text('subject'),
     senderName: text('sender_name'),
@@ -21,8 +23,8 @@ export const archivedEmails = pgTable('archived_emails', {
 });
 
 export const archivedEmailsRelations = relations(archivedEmails, ({ one }) => ({
-    custodian: one(custodians, {
-        fields: [archivedEmails.custodianId],
-        references: [custodians.id],
-    }),
+    ingestionSource: one(ingestionSources, {
+        fields: [archivedEmails.ingestionSourceId],
+        references: [ingestionSources.id]
+    })
 }));

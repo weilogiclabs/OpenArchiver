@@ -23,7 +23,7 @@
 	let formData = $state({
 		name: source?.name ?? '',
 		provider: source?.provider ?? 'google_workspace',
-		providerConfig: source?.providerConfig ?? {}
+		providerConfig: source?.credentials ?? {}
 	});
 
 	const triggerContent = $derived(

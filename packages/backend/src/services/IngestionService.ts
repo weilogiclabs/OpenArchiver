@@ -11,7 +11,10 @@ import { CryptoService } from './CryptoService';
 import { EmailProviderFactory } from './EmailProviderFactory';
 import { ingestionQueue, indexingQueue } from '../jobs/queues';
 import { StorageService } from './StorageService';
-import type { IInitialImportJob } from '@open-archive/types';
+import type { IInitialImportJob, EmailObject } from '@open-archive/types';
+import { archivedEmails, attachments as attachmentsSchema, emailAttachments } from '../database/schema';
+import { createHash } from 'crypto';
+import { logger } from '../config/logger';
 
 
 export class IngestionService {
@@ -68,6 +71,9 @@ export class IngestionService {
         const { providerConfig, ...rest } = dto;
         const valuesToUpdate: Partial<typeof ingestionSources.$inferInsert> = { ...rest };
 
+        // Get the original source to compare the status later
+        const originalSource = await this.findById(id);
+
         if (providerConfig) {
             // Encrypt the new credentials before updating
             valuesToUpdate.credentials = CryptoService.encryptObject(providerConfig);
@@ -82,7 +88,18 @@ export class IngestionService {
         if (!updatedSource) {
             throw new Error('Ingestion source not found');
         }
-        return this.decryptSource(updatedSource);
+
+        const decryptedSource = this.decryptSource(updatedSource);
+
+        // If the status has changed to auth_success, trigger the initial import
+        if (
+            originalSource.status !== 'auth_success' &&
+            decryptedSource.status === 'auth_success'
+        ) {
+            await this.triggerInitialImport(decryptedSource.id);
+        }
+
+        return decryptedSource;
     }
 
     public static async delete(id: string): Promise<IngestionSource> {
@@ -105,9 +122,9 @@ export class IngestionService {
     }
 
     public async performBulkImport(job: IInitialImportJob): Promise<void> {
+        console.log('performing bulk import');
         const { ingestionSourceId } = job;
         const source = await IngestionService.findById(ingestionSourceId);
-
         if (!source) {
             throw new Error(`Ingestion source ${ingestionSourceId} not found.`);
         }
@@ -123,12 +140,7 @@ export class IngestionService {
 
         try {
             for await (const email of connector.fetchEmails()) {
-                const filePath = `${source.id}/${email.id}.eml`;
-                await storage.put(filePath, Buffer.from(email.body, 'utf-8'));
-                await indexingQueue.add('index-email', {
-                    filePath,
-                    ingestionSourceId: source.id
-                });
+                await this.processEmail(email, source, storage);
             }
 
             await IngestionService.update(ingestionSourceId, {
@@ -145,6 +157,85 @@ export class IngestionService {
                 lastSyncStatusMessage: error instanceof Error ? error.message : 'An unknown error occurred.'
             });
             throw error; // Re-throw to allow BullMQ to handle the job failure
+        }
+    }
+
+    private async processEmail(
+        email: EmailObject,
+        source: IngestionSource,
+        storage: StorageService
+    ): Promise<void> {
+        try {
+            console.log('processing email, ', email.id);
+            const emlBuffer = email.eml ?? Buffer.from(email.body, 'utf-8');
+            const emailHash = createHash('sha256').update(emlBuffer).digest('hex');
+            const emailPath = `email-archive/${source.name.replaceAll(' ', '-')}-${source.id}/emails/${email.id}.eml`;
+            await storage.put(emailPath, emlBuffer);
+
+            const [archivedEmail] = await db
+                .insert(archivedEmails)
+                .values({
+                    ingestionSourceId: source.id,
+                    messageIdHeader:
+                        (email.headers['message-id'] as string) ??
+                        `generated-${emailHash}-${source.id}-${email.id}`,
+                    sentAt: email.receivedAt,
+                    subject: email.subject,
+                    senderName: email.from[0]?.name,
+                    senderEmail: email.from[0]?.address,
+                    recipients: {
+                        to: email.to,
+                        cc: email.cc,
+                        bcc: email.bcc
+                    },
+                    storagePath: emailPath,
+                    storageHashSha256: emailHash,
+                    sizeBytes: emlBuffer.length,
+                    hasAttachments: email.attachments.length > 0
+                })
+                .returning();
+
+            if (email.attachments.length > 0) {
+                for (const attachment of email.attachments) {
+                    const attachmentBuffer = attachment.content;
+                    const attachmentHash = createHash('sha256').update(attachmentBuffer).digest('hex');
+                    const attachmentPath = `email-archive/${source.name.replaceAll(' ', '-')}-${source.id}/attachments/${attachment.filename}`;
+                    await storage.put(attachmentPath, attachmentBuffer);
+
+                    const [newAttachment] = await db
+                        .insert(attachmentsSchema)
+                        .values({
+                            filename: attachment.filename,
+                            mimeType: attachment.contentType,
+                            sizeBytes: attachment.size,
+                            contentHashSha256: attachmentHash,
+                            storagePath: attachmentPath
+                        })
+                        .onConflictDoUpdate({
+                            target: attachmentsSchema.contentHashSha256,
+                            set: { filename: attachment.filename }
+                        })
+                        .returning();
+
+                    await db.insert(emailAttachments).values({
+                        emailId: archivedEmail.id,
+                        attachmentId: newAttachment.id
+                    });
+                }
+            }
+
+            // Uncomment when indexing feature is done
+            // await indexingQueue.add('index-email', {
+            //     filePath: emailPath,
+            //     ingestionSourceId: source.id
+            // });
+        } catch (error) {
+            logger.error({
+                message: `Failed to process email ${email.id} for source ${source.id}`,
+                error,
+                emailId: email.id,
+                ingestionSourceId: source.id
+            });
         }
     }
 }

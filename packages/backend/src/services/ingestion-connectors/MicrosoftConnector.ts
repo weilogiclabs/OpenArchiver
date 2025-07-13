@@ -1,6 +1,7 @@
-import type { Microsoft365Credentials } from '@open-archive/types';
-import type { IEmailConnector, EmailObject } from '../EmailProviderFactory';
+import type { Microsoft365Credentials, EmailObject, EmailAddress } from '@open-archive/types';
+import type { IEmailConnector } from '../EmailProviderFactory';
 import { ConfidentialClientApplication } from '@azure/msal-node';
+import { simpleParser, ParsedMail, Attachment, AddressObject } from 'mailparser';
 import axios from 'axios';
 
 const GRAPH_API_ENDPOINT = 'https://graph.microsoft.com/v1.0';
@@ -54,16 +55,42 @@ export class MicrosoftConnector implements IEmailConnector {
             const messages = res.data.value;
 
             for (const message of messages) {
-                // The raw MIME content is not directly available in the list view.
-                // A second request is needed to get the full content.
                 const rawContentRes = await axios.get(
                     `${GRAPH_API_ENDPOINT}/users/me/messages/${message.id}/$value`,
                     { headers }
                 );
+                const emlBuffer = Buffer.from(rawContentRes.data, 'utf-8');
+                const parsedEmail: ParsedMail = await simpleParser(emlBuffer);
+                const attachments = parsedEmail.attachments.map((attachment: Attachment) => ({
+                    filename: attachment.filename || 'untitled',
+                    contentType: attachment.contentType,
+                    size: attachment.size,
+                    content: attachment.content as Buffer
+                }));
+
+                const mapAddresses = (
+                    addresses: AddressObject | AddressObject[] | undefined
+                ): EmailAddress[] => {
+                    if (!addresses) return [];
+                    const addressArray = Array.isArray(addresses) ? addresses : [addresses];
+                    return addressArray.flatMap(a =>
+                        a.value.map(v => ({ name: v.name, address: v.address || '' }))
+                    );
+                };
+
                 yield {
                     id: message.id,
-                    headers: message, // The list response contains most headers
-                    body: rawContentRes.data,
+                    from: mapAddresses(parsedEmail.from),
+                    to: mapAddresses(parsedEmail.to),
+                    cc: mapAddresses(parsedEmail.cc),
+                    bcc: mapAddresses(parsedEmail.bcc),
+                    subject: parsedEmail.subject || '',
+                    body: parsedEmail.text || '',
+                    html: parsedEmail.html || '',
+                    headers: parsedEmail.headers as any,
+                    attachments,
+                    receivedAt: parsedEmail.date || new Date(),
+                    eml: emlBuffer
                 };
             }
             nextLink = res.data['@odata.nextLink'];
