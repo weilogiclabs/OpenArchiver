@@ -166,7 +166,7 @@ export class IngestionService {
         storage: StorageService
     ): Promise<void> {
         try {
-            console.log('processing email, ', email.id);
+            console.log('processing email, ', email.id, email.subject);
             const emlBuffer = email.eml ?? Buffer.from(email.body, 'utf-8');
             const emailHash = createHash('sha256').update(emlBuffer).digest('hex');
             const emailPath = `email-archive/${source.name.replaceAll(' ', '-')}-${source.id}/emails/${email.id}.eml`;
@@ -223,12 +223,11 @@ export class IngestionService {
                     });
                 }
             }
-
-            // Uncomment when indexing feature is done
-            // await indexingQueue.add('index-email', {
-            //     filePath: emailPath,
-            //     ingestionSourceId: source.id
-            // });
+            // adding to indexing queue
+            console.log('adding to indexing queue');
+            await indexingQueue.add('index-email', {
+                emailId: archivedEmail.id,
+            });
         } catch (error) {
             logger.error({
                 message: `Failed to process email ${email.id} for source ${source.id}`,

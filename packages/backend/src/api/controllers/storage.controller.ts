@@ -15,6 +15,7 @@ export class StorageController {
         try {
             const fileExists = await this.storageService.exists(filePath);
             if (!fileExists) {
+                console.log(filePath);
                 res.status(404).send('File not found');
                 return;
             }
