@@ -1,5 +1,5 @@
 import { hash } from 'bcryptjs';
-import type { User } from '@open-archive/types';
+import type { User } from '@open-archiver/types';
 import type { IUserService } from './AuthService';
 
 // This is a mock implementation of the IUserService.

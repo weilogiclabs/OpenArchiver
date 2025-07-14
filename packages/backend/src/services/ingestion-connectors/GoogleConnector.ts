@@ -1,4 +1,4 @@
-import type { GoogleWorkspaceCredentials, EmailObject, EmailAddress } from '@open-archive/types';
+import type { GoogleWorkspaceCredentials, EmailObject, EmailAddress } from '@open-archiver/types';
 import type { IEmailConnector } from '../EmailProviderFactory';
 import { google } from 'googleapis';
 import { simpleParser, ParsedMail, Attachment, AddressObject } from 'mailparser';

@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { IAuthService } from '../../services/AuthService';
-import type { AuthTokenPayload } from '@open-archive/types';
+import type { AuthTokenPayload } from '@open-archiver/types';
 import 'dotenv/config';
 // By using module augmentation, we can add our custom 'user' property
 // to the Express Request interface in a type-safe way.

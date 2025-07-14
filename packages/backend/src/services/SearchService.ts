@@ -1,6 +1,6 @@
 import { Index, MeiliSearch, SearchParams } from 'meilisearch';
 import { config } from '../config';
-import type { SearchQuery, SearchResult, EmailDocument } from '@open-archive/types';
+import type { SearchQuery, SearchResult, EmailDocument } from '@open-archiver/types';
 
 export class SearchService {
     private client: MeiliSearch;

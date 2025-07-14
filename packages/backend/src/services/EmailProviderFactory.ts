@@ -4,7 +4,7 @@ import type {
     Microsoft365Credentials,
     GenericImapCredentials,
     EmailObject
-} from '@open-archive/types';
+} from '@open-archiver/types';
 import { GoogleConnector } from './ingestion-connectors/GoogleConnector';
 import { MicrosoftConnector } from './ingestion-connectors/MicrosoftConnector';
 import { ImapConnector } from './ingestion-connectors/ImapConnector';

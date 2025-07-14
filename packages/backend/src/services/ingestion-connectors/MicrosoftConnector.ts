@@ -1,4 +1,4 @@
-import type { Microsoft365Credentials, EmailObject, EmailAddress } from '@open-archive/types';
+import type { Microsoft365Credentials, EmailObject, EmailAddress } from '@open-archiver/types';
 import type { IEmailConnector } from '../EmailProviderFactory';
 import { ConfidentialClientApplication } from '@azure/msal-node';
 import { simpleParser, ParsedMail, Attachment, AddressObject } from 'mailparser';

@@ -4,7 +4,7 @@
 	>
 		<div class="flex flex-col items-center gap-2">
 			<p class="text-muted-foreground text-balance text-center text-sm leading-loose">
-				© {new Date().getFullYear()} OpenArchive. All rights reserved.
+				© {new Date().getFullYear()} Open Archiver. All rights reserved.
 			</p>
 		</div>
 	</div>

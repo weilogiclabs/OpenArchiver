@@ -1,6 +1,6 @@
 import { compare, hash } from 'bcryptjs';
 import type { SignJWT, jwtVerify } from 'jose';
-import type { AuthTokenPayload, User, LoginResponse } from '@open-archive/types';
+import type { AuthTokenPayload, User, LoginResponse } from '@open-archiver/types';
 
 // This interface defines the contract for a service that manages users.
 // The AuthService will depend on this abstraction, not a concrete implementation.

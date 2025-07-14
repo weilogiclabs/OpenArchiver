@@ -1,6 +1,6 @@
 import type { Handle } from '@sveltejs/kit';
 import { jwtVerify } from 'jose';
-import type { User } from '@open-archive/types';
+import type { User } from '@open-archiver/types';
 
 const JWT_SECRET = new TextEncoder().encode('a-very-secret-key');
 

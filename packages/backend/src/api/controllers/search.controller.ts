@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { SearchService } from '../../services/SearchService';
-import type { SearchQuery } from '@open-archive/types';
+import type { SearchQuery } from '@open-archiver/types';
 
 export class SearchController {
     private searchService: SearchService;

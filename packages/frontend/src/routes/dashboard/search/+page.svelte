@@ -54,7 +54,7 @@
 	function getSnippets(
 		text: string,
 		positions: { start: number; length: number }[],
-		contextLength = 15
+		contextLength = 50
 	) {
 		if (!text || !positions) {
 			return [];
@@ -99,7 +99,7 @@
 </script>
 
 <svelte:head>
-	<title>Search | OpenArchive</title>
+	<title>Search | Open Archiver</title>
 	<meta name="description" content="Search for archived emails." />
 </svelte:head>
 

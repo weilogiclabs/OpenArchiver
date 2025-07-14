@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-	<title>Dashboard - OpenArchive</title>
+	<title>Dashboard - Open Archiver</title>
 </svelte:head>
 
 <div class="">

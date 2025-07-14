@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { IngestionSource, CreateIngestionSourceDto } from '@open-archive/types';
+	import type { IngestionSource, CreateIngestionSourceDto } from '@open-archiver/types';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Input } from '$lib/components/ui/input';

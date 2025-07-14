@@ -1,6 +1,6 @@
 import { api } from '$lib/server/api';
 import type { PageServerLoad } from './$types';
-import type { IngestionSource, PaginatedArchivedEmails } from '@open-archive/types';
+import type { IngestionSource, PaginatedArchivedEmails } from '@open-archiver/types';
 
 export const load: PageServerLoad = async (event) => {
     try {

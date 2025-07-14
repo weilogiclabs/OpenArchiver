@@ -6,7 +6,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { api } from '$lib/api.client';
 	import { authStore } from '$lib/stores/auth.store';
-	import type { LoginResponse } from '@open-archive/types';
+	import type { LoginResponse } from '@open-archiver/types';
 
 	let email = '';
 	let password = '';
@@ -39,8 +39,8 @@
 </script>
 
 <svelte:head>
-	<title>Login - OpenArchive</title>
-	<meta name="description" content="Login to your OpenArchive account." />
+	<title>Login - Open Archiver</title>
+	<meta name="description" content="Login to your Open Archiver account." />
 </svelte:head>
 
 <div class="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900">

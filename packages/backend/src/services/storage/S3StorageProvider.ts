@@ -1,4 +1,4 @@
-import { IStorageProvider, S3StorageConfig } from '@open-archive/types';
+import { IStorageProvider, S3StorageConfig } from '@open-archiver/types';
 import {
     S3Client,
     GetObjectCommand,

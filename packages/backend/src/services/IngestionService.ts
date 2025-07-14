@@ -5,13 +5,13 @@ import type {
     UpdateIngestionSourceDto,
     IngestionSource,
     IngestionCredentials
-} from '@open-archive/types';
+} from '@open-archiver/types';
 import { eq } from 'drizzle-orm';
 import { CryptoService } from './CryptoService';
 import { EmailProviderFactory } from './EmailProviderFactory';
 import { ingestionQueue, indexingQueue } from '../jobs/queues';
 import { StorageService } from './StorageService';
-import type { IInitialImportJob, EmailObject } from '@open-archive/types';
+import type { IInitialImportJob, EmailObject } from '@open-archiver/types';
 import { archivedEmails, attachments as attachmentsSchema, emailAttachments } from '../database/schema';
 import { createHash } from 'crypto';
 import { logger } from '../config/logger';

@@ -1,4 +1,4 @@
-import { Attachment, EmailDocument } from '@open-archive/types';
+import { Attachment, EmailDocument } from '@open-archiver/types';
 import { SearchService } from './SearchService';
 import { StorageService } from './StorageService';
 import { extractText } from '../helpers/textExtractor';

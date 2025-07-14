@@ -7,7 +7,7 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import IngestionSourceForm from '$lib/components/custom/IngestionSourceForm.svelte';
 	import { api } from '$lib/api.client';
-	import type { IngestionSource, CreateIngestionSourceDto } from '@open-archive/types';
+	import type { IngestionSource, CreateIngestionSourceDto } from '@open-archiver/types';
 
 	let { data }: { data: PageData } = $props();
 

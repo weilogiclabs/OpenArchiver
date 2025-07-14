@@ -1,4 +1,4 @@
-import { StorageConfig } from '@open-archive/types';
+import { StorageConfig } from '@open-archiver/types';
 import 'dotenv/config';
 
 const storageType = process.env.STORAGE_TYPE;

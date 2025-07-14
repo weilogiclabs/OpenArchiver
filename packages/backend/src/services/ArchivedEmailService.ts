@@ -1,7 +1,7 @@
 import { count, desc, eq } from 'drizzle-orm';
 import { db } from '../database';
 import { archivedEmails, attachments, emailAttachments } from '../database/schema';
-import type { PaginatedArchivedEmails, ArchivedEmail, Recipient } from '@open-archive/types';
+import type { PaginatedArchivedEmails, ArchivedEmail, Recipient } from '@open-archiver/types';
 import { StorageService } from './StorageService';
 import type { Readable } from 'stream';
 

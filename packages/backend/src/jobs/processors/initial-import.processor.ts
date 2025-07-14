@@ -1,6 +1,6 @@
 import { Job } from 'bullmq';
 import { IngestionService } from '../../services/IngestionService';
-import { IInitialImportJob } from '@open-archive/types';
+import { IInitialImportJob } from '@open-archiver/types';
 
 const ingestionService = new IngestionService();
 

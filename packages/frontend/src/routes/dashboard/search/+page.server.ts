@@ -1,6 +1,6 @@
 import type { PageServerLoad, Actions } from './$types';
 import { api } from '$lib/server/api';
-import type { SearchResult } from '@open-archive/types';
+import type { SearchResult } from '@open-archiver/types';
 
 export const load: PageServerLoad = async () => {
     return {

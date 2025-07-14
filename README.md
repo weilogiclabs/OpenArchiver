@@ -1,11 +1,11 @@
-# Open Archive
+# Open Archiver
 
 > [!WARNING]
 > This project is currently in active development and has not yet reached a stable General Availability (GA) release. It is not recommended for use in production environments. We welcome contributions from the community to help us accelerate development and improve the platform. Please see our [Contributing](#contributing) section for more details.
 
 **A secure, sovereign, and affordable open-source platform for email archiving and eDiscovery.**
 
-Open Archive enables individuals and organizations to take control of their digital communication history. It provides a robust, self-hosted solution for ingesting, storing, indexing, and searching emails from major platforms, ensuring a permanent, tamper-proof record of your most critical data, free from vendor lock-in.
+Open Archiver enables individuals and organizations to take control of their digital communication history. It provides a robust, self-hosted solution for ingesting, storing, indexing, and searching emails from major platforms, ensuring a permanent, tamper-proof record of your most critical data, free from vendor lock-in.
 
 ## Vision
 
@@ -23,7 +23,7 @@ To provide individuals and organizations with a secure, sovereign, and affordabl
 
 ## Tech Stack
 
-Open Archive is built on a modern, scalable, and maintainable technology stack:
+Open Archiver is built on a modern, scalable, and maintainable technology stack:
 
 -   **Frontend**: SvelteKit with Svelte 5
 -   **Backend**: Node.js with Express.js & TypeScript
@@ -44,8 +44,8 @@ Open Archive is built on a modern, scalable, and maintainable technology stack:
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/your-username/open-archive.git
-    cd open-archive
+    git clone https://github.com/LogicLabs-OU/OpenArchiver.git
+    cd open-archiver
     ```
 
 2.  **Configure your environment:**
@@ -66,7 +66,7 @@ Open Archive is built on a modern, scalable, and maintainable technology stack:
     This command will build the necessary Docker images and start all the services (frontend, backend, database, etc.) in the background.
 
 4.  **Access the application:**
-    Once the services are running, you can access the Open Archive web interface by navigating to `http://localhost:3000` in your web browser.
+    Once the services are running, you can access the Open Archiver web interface by navigating to `http://localhost:3000` in your web browser.
 
 ## Contributing
 

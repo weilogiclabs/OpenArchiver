@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { IngestionService } from '../../services/IngestionService';
-import { CreateIngestionSourceDto, UpdateIngestionSourceDto } from '@open-archive/types';
+import { CreateIngestionSourceDto, UpdateIngestionSourceDto } from '@open-archiver/types';
 
 export class IngestionController {
     public create = async (req: Request, res: Response): Promise<Response> => {

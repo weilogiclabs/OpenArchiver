@@ -1,4 +1,4 @@
-import { IStorageProvider, StorageConfig } from '@open-archive/types';
+import { IStorageProvider, StorageConfig } from '@open-archiver/types';
 import { LocalFileSystemProvider } from './storage/LocalFileSystemProvider';
 import { S3StorageProvider } from './storage/S3StorageProvider';
 import { config } from '../config/index';

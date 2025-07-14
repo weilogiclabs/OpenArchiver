@@ -1,4 +1,4 @@
-import type { GenericImapCredentials, EmailObject, EmailAddress } from '@open-archive/types';
+import type { GenericImapCredentials, EmailObject, EmailAddress } from '@open-archiver/types';
 import type { IEmailConnector } from '../EmailProviderFactory';
 import { ImapFlow } from 'imapflow';
 import { simpleParser, ParsedMail, Attachment, AddressObject } from 'mailparser';
