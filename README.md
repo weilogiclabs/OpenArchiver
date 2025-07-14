@@ -7,6 +7,8 @@
 
 Open Archiver enables individuals and organizations to take control of their digital communication history. It provides a robust, self-hosted solution for ingesting, storing, indexing, and searching emails from major platforms, ensuring a permanent, tamper-proof record of your most critical data, free from vendor lock-in.
 
+![Open Archiver Preview](assets/screenshots/email.png)
+
 ## Vision
 
 To provide individuals and organizations with a secure, sovereign, and affordable platform to preserve and access their digital communication history.
