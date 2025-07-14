@@ -2,7 +2,10 @@
 	import PostalMime, { type Email } from 'postal-mime';
 	import type { Buffer } from 'buffer';
 
-	let { raw }: { raw: Buffer | { type: 'Buffer'; data: number[] } | undefined } = $props();
+	let {
+		raw,
+		rawHtml
+	}: { raw?: Buffer | { type: 'Buffer'; data: number[] } | undefined; rawHtml?: string } = $props();
 
 	let parsedEmail: Email | null = $state(null);
 	let isLoading = $state(true);
@@ -10,8 +13,10 @@
 	// By adding a <base> tag, all relative and absolute links in the HTML document
 	// will open in a new tab by default.
 	let emailHtml = $derived(() => {
-		if (parsedEmail?.html) {
+		if (parsedEmail && parsedEmail?.html) {
 			return `<base target="_blank" />${parsedEmail.html}`;
+		} else if (rawHtml) {
+			return `<base target="_blank" />${rawHtml}`;
 		}
 		return null;
 	});

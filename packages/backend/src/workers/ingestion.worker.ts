@@ -14,7 +14,15 @@ const processor = async (job: any) => {
     }
 };
 
-const worker = new Worker('ingestion', processor, { connection });
+const worker = new Worker('ingestion', processor, {
+    connection,
+    removeOnComplete: {
+        count: 100, // keep last 100 jobs
+    },
+    removeOnFail: {
+        count: 500, // keep last 500 failed jobs
+    },
+});
 
 console.log('Ingestion worker started');
 

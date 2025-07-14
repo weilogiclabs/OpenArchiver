@@ -4,15 +4,18 @@ import { AuthController } from './api/controllers/auth.controller';
 import { IngestionController } from './api/controllers/ingestion.controller';
 import { ArchivedEmailController } from './api/controllers/archived-email.controller';
 import { StorageController } from './api/controllers/storage.controller';
+import { SearchController } from './api/controllers/search.controller';
 import { requireAuth } from './api/middleware/requireAuth';
 import { createAuthRouter } from './api/routes/auth.routes';
 import { createIngestionRouter } from './api/routes/ingestion.routes';
 import { createArchivedEmailRouter } from './api/routes/archived-email.routes';
 import { createStorageRouter } from './api/routes/storage.routes';
+import { createSearchRouter } from './api/routes/search.routes';
 import testRouter from './api/routes/test.routes';
 import { AuthService } from './services/AuthService';
 import { AdminUserService } from './services/UserService';
 import { StorageService } from './services/StorageService';
+import { SearchService } from './services/SearchService';
 
 
 
@@ -40,6 +43,8 @@ const ingestionController = new IngestionController();
 const archivedEmailController = new ArchivedEmailController();
 const storageService = new StorageService();
 const storageController = new StorageController(storageService);
+const searchService = new SearchService();
+const searchController = new SearchController();
 
 // --- Express App Initialization ---
 const app = express();
@@ -52,10 +57,12 @@ const authRouter = createAuthRouter(authController);
 const ingestionRouter = createIngestionRouter(ingestionController, authService);
 const archivedEmailRouter = createArchivedEmailRouter(archivedEmailController, authService);
 const storageRouter = createStorageRouter(storageController, authService);
+const searchRouter = createSearchRouter(searchController, authService);
 app.use('/v1/auth', authRouter);
 app.use('/v1/ingestion-sources', ingestionRouter);
 app.use('/v1/archived-emails', archivedEmailRouter);
 app.use('/v1/storage', storageRouter);
+app.use('/v1/search', searchRouter);
 app.use('/v1/test', testRouter);
 
 // Example of a protected route
@@ -73,6 +80,10 @@ app.get('/', (req, res) => {
 // --- Server Start ---
 const startServer = async () => {
     try {
+        // Configure the Meilisearch index on startup
+        console.log('Configuring email index...');
+        await searchService.configureEmailIndex();
+
         app.listen(PORT_BACKEND, () => {
             console.log(`Backend listening at http://localhost:${PORT_BACKEND}`);
         });

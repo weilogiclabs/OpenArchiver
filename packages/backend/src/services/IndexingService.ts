@@ -1,4 +1,4 @@
-import { Attachment } from '@open-archive/types';
+import { Attachment, EmailDocument } from '@open-archive/types';
 import { SearchService } from './SearchService';
 import { StorageService } from './StorageService';
 import { extractText } from '../helpers/textExtractor';
@@ -6,23 +6,7 @@ import DatabaseService from './DatabaseService';
 import { archivedEmails, attachments, emailAttachments } from '../database/schema';
 import { eq } from 'drizzle-orm';
 import { streamToBuffer } from '../helpers/streamToBuffer';
-
-// Define the structure of the document to be indexed in Meilisearch
-interface EmailDocument {
-    id: string; // The unique ID of the email
-    from: string;
-    to: string[];
-    cc: string[];
-    bcc: string[];
-    subject: string;
-    body: string;
-    attachments: {
-        filename: string;
-        content: string; // Extracted text from the attachment
-    }[];
-    timestamp: number;
-    // other metadata
-}
+import { simpleParser } from 'mailparser';
 
 interface DbRecipients {
     to: { name: string; address: string; }[];
@@ -82,7 +66,12 @@ export class IndexingService {
 
         const emailBodyStream = await this.storageService.get(email.storagePath);
         const emailBodyBuffer = await streamToBuffer(emailBodyStream);
-        const emailBodyText = await extractText(emailBodyBuffer, 'text/plain');
+        const parsedEmail = await simpleParser(emailBodyBuffer);
+        const emailBodyText =
+            parsedEmail.text ||
+            parsedEmail.html ||
+            (await extractText(emailBodyBuffer, 'text/plain')) ||
+            '';
 
         const recipients = email.recipients as DbRecipients;
 
@@ -96,6 +85,7 @@ export class IndexingService {
             body: emailBodyText,
             attachments: attachmentContents,
             timestamp: new Date(email.sentAt).getTime(),
+            ingestionSourceId: email.ingestionSourceId
         };
     }
 

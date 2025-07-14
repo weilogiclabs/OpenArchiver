@@ -46,3 +46,21 @@ export interface EmailObject {
     /** An optional buffer containing the full raw EML content of the email, which is useful for archival and compliance purposes. */
     eml?: Buffer;
 }
+
+// Define the structure of the document to be indexed in Meilisearch
+export interface EmailDocument {
+    id: string; // The unique ID of the email
+    from: string;
+    to: string[];
+    cc: string[];
+    bcc: string[];
+    subject: string;
+    body: string;
+    attachments: {
+        filename: string;
+        content: string; // Extracted text from the attachment
+    }[];
+    timestamp: number;
+    ingestionSourceId: string;
+    // other metadata
+}

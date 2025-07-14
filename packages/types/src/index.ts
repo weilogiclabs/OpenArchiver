@@ -4,3 +4,4 @@ export * from './ingestion.types';
 export * from './storage.types';
 export * from './email.types';
 export * from './archived-emails.types';
+export * from './search.types';
