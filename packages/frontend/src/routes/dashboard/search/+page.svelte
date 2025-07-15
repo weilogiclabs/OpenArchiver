@@ -123,7 +123,11 @@
 
 	{#if searchResult}
 		<p class="text-muted-foreground mb-4">
-			Found {searchResult.total} results in {searchResult.hits.length / 1000}s
+			{#if searchResult.total > 0}
+				Found {searchResult.total} results in {searchResult.hits.length / 1000}s
+			{:else}
+				Found {searchResult.total} results
+			{/if}
 		</p>
 
 		<div class="grid gap-4">
