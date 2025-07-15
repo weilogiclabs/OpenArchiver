@@ -19,8 +19,15 @@ export interface GenericImapCredentials {
 
 export interface GoogleWorkspaceCredentials {
     type: 'google_workspace';
-    clientId: string;
-    clientSecret: string;
+    /**
+     * The full JSON content of the Google Service Account key.
+     * This should be a stringified JSON object.
+     */
+    serviceAccountKeyJson: string;
+    /**
+     * The email of the super-admin user to impersonate for domain-wide operations.
+     */
+    impersonatedAdminEmail: string;
 }
 
 export interface Microsoft365Credentials {
@@ -63,4 +70,9 @@ export interface UpdateIngestionSourceDto {
 
 export interface IInitialImportJob {
     ingestionSourceId: string;
+}
+
+export interface IProcessMailboxJob {
+    ingestionSourceId: string;
+    userEmail: string;
 }

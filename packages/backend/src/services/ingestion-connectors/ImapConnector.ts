@@ -30,7 +30,7 @@ export class ImapConnector implements IEmailConnector {
         }
     }
 
-    public async *fetchEmails(since?: Date): AsyncGenerator<EmailObject> {
+    public async *fetchEmails(userEmail?: string, since?: Date): AsyncGenerator<EmailObject> {
         await this.client.connect();
         try {
             await this.client.mailboxOpen('INBOX');

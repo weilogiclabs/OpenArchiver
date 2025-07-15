@@ -38,7 +38,7 @@ export class MicrosoftConnector implements IEmailConnector {
         }
     }
 
-    public async *fetchEmails(since?: Date): AsyncGenerator<EmailObject> {
+    public async *fetchEmails(userEmail?: string, since?: Date): AsyncGenerator<EmailObject> {
         const accessToken = await this.getAccessToken();
         const headers = { Authorization: `Bearer ${accessToken}` };
 

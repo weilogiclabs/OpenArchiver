@@ -5,14 +5,15 @@ import type {
     GenericImapCredentials,
     EmailObject
 } from '@open-archiver/types';
-import { GoogleConnector } from './ingestion-connectors/GoogleConnector';
+import { GoogleWorkspaceConnector } from './ingestion-connectors/GoogleWorkspaceConnector';
 import { MicrosoftConnector } from './ingestion-connectors/MicrosoftConnector';
 import { ImapConnector } from './ingestion-connectors/ImapConnector';
 
 // Define a common interface for all connectors
 export interface IEmailConnector {
     testConnection(): Promise<boolean>;
-    fetchEmails(since?: Date): AsyncGenerator<EmailObject>;
+    fetchEmails(userEmail?: string, since?: Date): AsyncGenerator<EmailObject>;
+    listAllUsers?(): AsyncGenerator<any>;
 }
 
 export class EmailProviderFactory {
@@ -22,7 +23,7 @@ export class EmailProviderFactory {
 
         switch (source.provider) {
             case 'google_workspace':
-                return new GoogleConnector(credentials as GoogleWorkspaceCredentials);
+                return new GoogleWorkspaceConnector(credentials as GoogleWorkspaceCredentials);
             case 'microsoft_365':
                 return new MicrosoftConnector(credentials as Microsoft365Credentials);
             case 'generic_imap':

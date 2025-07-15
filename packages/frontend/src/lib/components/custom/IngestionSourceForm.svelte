@@ -5,6 +5,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
 
 	let {
 		source = null,
@@ -20,10 +21,12 @@
 		{ value: 'generic_imap', label: 'Generic IMAP' }
 	];
 
-	let formData = $state({
+	let formData: CreateIngestionSourceDto = $state({
 		name: source?.name ?? '',
 		provider: source?.provider ?? 'google_workspace',
-		providerConfig: source?.credentials ?? {}
+		providerConfig: source?.credentials ?? {
+			type: source?.provider ?? 'google_workspace'
+		}
 	});
 
 	const triggerContent = $derived(
@@ -55,7 +58,25 @@
 		</Select.Root>
 	</div>
 
-	{#if formData.provider === 'google_workspace' || formData.provider === 'microsoft_365'}
+	{#if formData.provider === 'google_workspace'}
+		<div class="grid grid-cols-4 items-center gap-4">
+			<Label for="serviceAccountKeyJson" class="text-right">Service Account Key (JSON)</Label>
+			<Textarea
+				placeholder="Paste your service account key JSON content"
+				id="serviceAccountKeyJson"
+				bind:value={formData.providerConfig.serviceAccountKeyJson}
+				class="col-span-3 max-h-32"
+			/>
+		</div>
+		<div class="grid grid-cols-4 items-center gap-4">
+			<Label for="impersonatedAdminEmail" class="text-right">Impersonated Admin Email</Label>
+			<Input
+				id="impersonatedAdminEmail"
+				bind:value={formData.providerConfig.impersonatedAdminEmail}
+				class="col-span-3"
+			/>
+		</div>
+	{:else if formData.provider === 'microsoft_365'}
 		<div class="grid grid-cols-4 items-center gap-4">
 			<Label for="clientId" class="text-right">Client ID</Label>
 			<Input id="clientId" bind:value={formData.providerConfig.clientId} class="col-span-3" />
@@ -67,10 +88,6 @@
 				bind:value={formData.providerConfig.clientSecret}
 				class="col-span-3"
 			/>
-		</div>
-		<div class="grid grid-cols-4 items-center gap-4">
-			<Label for="redirectUri" class="text-right">Redirect URI</Label>
-			<Input id="redirectUri" bind:value={formData.providerConfig.redirectUri} class="col-span-3" />
 		</div>
 	{:else if formData.provider === 'generic_imap'}
 		<div class="grid grid-cols-4 items-center gap-4">
