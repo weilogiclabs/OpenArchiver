@@ -2,10 +2,12 @@ import { google } from 'googleapis';
 import type { admin_directory_v1, gmail_v1, Common } from 'googleapis';
 import type {
     GoogleWorkspaceCredentials,
-    EmailObject
+    EmailObject,
+    EmailAddress
 } from '@open-archiver/types';
 import type { IEmailConnector } from '../EmailProviderFactory';
 import { logger } from '../../config/logger';
+import { simpleParser, ParsedMail, Attachment, AddressObject } from 'mailparser';
 
 /**
  * A connector for Google Workspace that uses a service account with domain-wide delegation
@@ -152,18 +154,37 @@ export class GoogleWorkspaceConnector implements IEmailConnector {
                     });
 
                     if (msgResponse.data.raw) {
+                        // The raw data is base64url encoded, so we need to decode it.
+                        const rawEmail = Buffer.from(msgResponse.data.raw, 'base64url');
+                        const parsedEmail: ParsedMail = await simpleParser(rawEmail);
+
+                        const attachments = parsedEmail.attachments.map((attachment: Attachment) => ({
+                            filename: attachment.filename || 'untitled',
+                            contentType: attachment.contentType,
+                            size: attachment.size,
+                            content: attachment.content as Buffer
+                        }));
+
+                        const mapAddresses = (addresses: AddressObject | AddressObject[] | undefined): EmailAddress[] => {
+                            if (!addresses) return [];
+                            const addressArray = Array.isArray(addresses) ? addresses : [addresses];
+                            return addressArray.flatMap(a => a.value.map(v => ({ name: v.name, address: v.address || '' })));
+                        };
+
                         yield {
                             id: msgResponse.data.id!,
                             userEmail: userEmail,
-                            raw: msgResponse.data.raw,
-                            from: [],
-                            to: [],
-                            subject: '',
-                            body: '',
-                            html: '',
-                            headers: {},
-                            attachments: [],
-                            receivedAt: new Date()
+                            eml: rawEmail,
+                            from: mapAddresses(parsedEmail.from),
+                            to: mapAddresses(parsedEmail.to),
+                            cc: mapAddresses(parsedEmail.cc),
+                            bcc: mapAddresses(parsedEmail.bcc),
+                            subject: parsedEmail.subject || '',
+                            body: parsedEmail.text || '',
+                            html: parsedEmail.html || '',
+                            headers: parsedEmail.headers as any,
+                            attachments,
+                            receivedAt: parsedEmail.date || new Date(),
                         };
                     }
                 }

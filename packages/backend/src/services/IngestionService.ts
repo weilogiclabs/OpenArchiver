@@ -160,7 +160,7 @@ export class IngestionService {
         }
     }
 
-    private async processEmail(
+    public async processEmail(
         email: EmailObject,
         source: IngestionSource,
         storage: StorageService

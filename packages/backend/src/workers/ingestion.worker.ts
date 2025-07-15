@@ -2,6 +2,7 @@ import { Worker } from 'bullmq';
 import { connection } from '../config/redis';
 import initialImportProcessor from '../jobs/processors/initial-import.processor';
 import continuousSyncProcessor from '../jobs/processors/continuous-sync.processor';
+import { processMailboxProcessor } from '../jobs/processors/process-mailbox.processor';
 
 const processor = async (job: any) => {
     switch (job.name) {
@@ -9,6 +10,8 @@ const processor = async (job: any) => {
             return initialImportProcessor(job);
         case 'continuous-sync':
             return continuousSyncProcessor(job);
+        case 'process-mailbox':
+            return processMailboxProcessor(job);
         default:
             throw new Error(`Unknown job name: ${job.name}`);
     }

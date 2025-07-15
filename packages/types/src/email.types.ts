@@ -47,8 +47,6 @@ export interface EmailObject {
     eml?: Buffer;
     /** The email address of the user whose mailbox this email belongs to. */
     userEmail?: string;
-    /** The full, raw content of the email, typically in base64url-encoded format for APIs like Gmail. */
-    raw?: string;
 }
 
 // Define the structure of the document to be indexed in Meilisearch
