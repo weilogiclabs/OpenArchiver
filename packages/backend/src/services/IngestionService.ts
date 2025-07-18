@@ -9,12 +9,15 @@ import type {
 import { eq } from 'drizzle-orm';
 import { CryptoService } from './CryptoService';
 import { EmailProviderFactory } from './EmailProviderFactory';
-import { ingestionQueue, indexingQueue } from '../jobs/queues';
+import { ingestionQueue } from '../jobs/queues';
 import { StorageService } from './StorageService';
 import type { IInitialImportJob, EmailObject } from '@open-archiver/types';
 import { archivedEmails, attachments as attachmentsSchema, emailAttachments } from '../database/schema';
 import { createHash } from 'crypto';
 import { logger } from '../config/logger';
+import { IndexingService } from './IndexingService';
+import { SearchService } from './SearchService';
+import { DatabaseService } from './DatabaseService';
 
 
 export class IngestionService {
@@ -118,7 +121,7 @@ export class IngestionService {
 
         await ingestionQueue.add('initial-import', { ingestionSourceId: source.id });
 
-        return await this.update(id, { status: 'syncing' });
+        return await this.update(id, { status: 'importing' });
     }
 
     public async performBulkImport(job: IInitialImportJob): Promise<void> {
@@ -131,7 +134,7 @@ export class IngestionService {
 
         console.log(`Starting bulk import for source: ${source.name} (${source.id})`);
         await IngestionService.update(ingestionSourceId, {
-            status: 'syncing',
+            status: 'importing',
             lastSyncStartedAt: new Date()
         });
 
@@ -224,10 +227,17 @@ export class IngestionService {
                 }
             }
             // adding to indexing queue
+            //Instead: index by email (raw email object, ingestion id)
             console.log('adding to indexing queue');
-            await indexingQueue.add('index-email', {
-                emailId: archivedEmail.id,
-            });
+            // await indexingQueue.add('index-email', {
+            //     emailId: archivedEmail.id,
+            // });
+
+            const searchService = new SearchService();
+            const storageService = new StorageService();
+            const databaseService = new DatabaseService();
+            const indexingService = new IndexingService(databaseService, searchService, storageService);
+            await indexingService.indexByEmail(email, source.id);
         } catch (error) {
             logger.error({
                 message: `Failed to process email ${email.id} for source ${source.id}`,

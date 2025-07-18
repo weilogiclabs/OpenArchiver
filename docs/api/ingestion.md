@@ -32,6 +32,7 @@ The `status` field tracks the state of the ingestion source.
 -   `pending_auth`: The source has been created but requires user authorization (OAuth flow).
 -   `active`: The source is authenticated and ready to sync.
 -   `syncing`: An import job is currently in progress.
+-   `importing`: initial syncing in progress
 -   `paused`: The source is temporarily disabled.
 -   `error`: An error occurred during the last sync.
 
@@ -185,7 +186,7 @@ All fields are optional. Only include the fields you want to change.
 
 -   **Method:** `POST`
 -   **Path:** `/:id/sync`
--   **Description:** Initiates the email import process for a given source. This is an asynchronous operation that enqueues a background job and immediately returns a response. The status of the source will be updated to `syncing`.
+-   **Description:** Initiates the email import process for a given source. This is an asynchronous operation that enqueues a background job and immediately returns a response. The status of the source will be updated to `importing`.
 
 #### URL Parameters
 

@@ -12,6 +12,7 @@ export const ingestionStatusEnum = pgEnum('ingestion_status', [
     'error',
     'pending_auth',
     'syncing',
+    'importing',
     'auth_success'
 ]);
 

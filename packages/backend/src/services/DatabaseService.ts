@@ -1,7 +1,6 @@
 import { db } from '../database';
 
-class DatabaseService {
+export class DatabaseService {
     public db = db;
 }
 
-export default new DatabaseService();

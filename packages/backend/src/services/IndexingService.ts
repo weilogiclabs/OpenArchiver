@@ -1,8 +1,8 @@
-import { Attachment, EmailDocument } from '@open-archiver/types';
+import { Attachment, EmailDocument, EmailObject } from '@open-archiver/types';
 import { SearchService } from './SearchService';
 import { StorageService } from './StorageService';
 import { extractText } from '../helpers/textExtractor';
-import DatabaseService from './DatabaseService';
+import { DatabaseService } from './DatabaseService';
 import { archivedEmails, attachments, emailAttachments } from '../database/schema';
 import { eq } from 'drizzle-orm';
 import { streamToBuffer } from '../helpers/streamToBuffer';
@@ -14,13 +14,22 @@ interface DbRecipients {
     bcc: { name: string; address: string; }[];
 }
 
+type AttachmentsType = {
+    filename: string,
+    buffer: Buffer,
+    mimeType: string;
+}[];
+
 export class IndexingService {
-    private dbService: typeof DatabaseService;
+    private dbService: DatabaseService;
     private searchService: SearchService;
     private storageService: StorageService;
 
+    /**
+     * Initializes the service with its dependencies.
+     */
     constructor(
-        dbService: typeof DatabaseService,
+        dbService: DatabaseService,
         searchService: SearchService,
         storageService: StorageService,
     ) {
@@ -29,6 +38,9 @@ export class IndexingService {
         this.storageService = storageService;
     }
 
+    /**
+     * Fetches an email by its ID from the database, creates a search document, and indexes it.
+     */
     public async indexEmailById(emailId: string): Promise<void> {
         const email = await this.dbService.db.query.archivedEmails.findFirst({
             where: eq(archivedEmails.id, emailId),
@@ -58,6 +70,69 @@ export class IndexingService {
         await this.searchService.addDocuments('emails', [document], 'id');
     }
 
+    /**
+     * Indexes an email object directly, creates a search document, and indexes it.
+     */
+    public async indexByEmail(email: EmailObject, ingestionSourceId: string): Promise<void> {
+        const attachments: AttachmentsType = [];
+        if (email.attachments && email.attachments.length > 0) {
+            for (const attachment of email.attachments) {
+                attachments.push({
+                    buffer: attachment.content,
+                    filename: attachment.filename,
+                    mimeType: attachment.contentType
+                });
+            }
+        }
+        const document = await this.createEmailDocumentFromRaw(email, attachments, ingestionSourceId);
+        await this.searchService.addDocuments('emails', [document], 'id');
+    }
+
+    /**
+     * Creates a search document from a raw email object and its attachments.
+     */
+    private async createEmailDocumentFromRaw(
+        email: EmailObject,
+        attachments: AttachmentsType,
+        ingestionSourceId: string
+    ): Promise<EmailDocument> {
+        const extractedAttachments = [];
+        for (const attachment of attachments) {
+            try {
+                const textContent = await extractText(
+                    attachment.buffer,
+                    attachment.mimeType || ''
+                );
+                extractedAttachments.push({
+                    filename: attachment.filename,
+                    content: textContent,
+                });
+            } catch (error) {
+                console.error(
+                    `Failed to extract text from attachment: ${attachment.filename}`,
+                    error
+                );
+                //  skip attachment or fail the job
+            }
+        }
+        return {
+            id: email.id,
+            from: email.from[0]?.address,
+            to: email.to.map((i) => i.address) || [],
+            cc: email.cc?.map((i) => i.address) || [],
+            bcc: email.bcc?.map((i) => i.address) || [],
+            subject: email.subject || '',
+            body: email.body || email.html || '',
+            attachments: extractedAttachments,
+            timestamp: new Date(email.receivedAt).getTime(),
+            ingestionSourceId: ingestionSourceId
+        };
+    }
+
+
+    /**
+     * Creates a search document from a database email record and its attachments.
+     */
     private async createEmailDocument(
         email: typeof archivedEmails.$inferSelect,
         attachments: Attachment[]
@@ -89,6 +164,9 @@ export class IndexingService {
         };
     }
 
+    /**
+     * Extracts text content from a list of attachments.
+     */
     private async extractAttachmentContents(
         attachments: Attachment[]
     ): Promise<{ filename: string; content: string; }[]> {
@@ -112,7 +190,7 @@ export class IndexingService {
                     `Failed to extract text from attachment: ${attachment.filename}`,
                     error
                 );
-                // Decide on error handling: skip attachment or fail the job
+                //  skip attachment or fail the job
             }
         }
         return extractedAttachments;

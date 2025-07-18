@@ -35,10 +35,9 @@
 
 	const handleSync = async (id: string) => {
 		await api(`/ingestion-sources/${id}/sync`, { method: 'POST' });
-		// Optionally, refresh the data or update the status locally
 		const updatedSources = ingestionSources.map((s) => {
 			if (s.id === id) {
-				return { ...s, status: 'syncing' as const };
+				return { ...s, status: 'importing' as const };
 			}
 			return s;
 		});

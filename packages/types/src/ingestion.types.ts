@@ -6,6 +6,7 @@ export type IngestionStatus =
     | 'error'
     | 'pending_auth'
     | 'syncing'
+    | 'importing'
     | 'auth_success';
 
 export interface GenericImapCredentials {
