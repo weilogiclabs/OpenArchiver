@@ -228,11 +228,10 @@ export class IngestionService {
             }
             // adding to indexing queue
             //Instead: index by email (raw email object, ingestion id)
-            console.log('adding to indexing queue');
+            console.log('Indexing email: ', email.subject);
             // await indexingQueue.add('index-email', {
             //     emailId: archivedEmail.id,
             // });
-
             const searchService = new SearchService();
             const storageService = new StorageService();
             const databaseService = new DatabaseService();

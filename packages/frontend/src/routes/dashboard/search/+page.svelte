@@ -9,9 +9,11 @@
 		CardTitle,
 		CardDescription
 	} from '$lib/components/ui/card';
+	import type { SearchResult } from '@open-archiver/types';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	const searchResult = form?.searchResult ?? data.searchResult;
+	console.log(searchResult);
 	const query = form?.query ?? data.query;
 	const error = form?.error;
 
@@ -26,6 +28,8 @@
 			.replace('<html', '')
 			.replace('</html>', '');
 	}
+
+	function getHighlightedHTMLFormatted(formatted: SearchResult['hits']) {}
 
 	function getHighlightedHTML(
 		text: string,
@@ -106,7 +110,7 @@
 <div class="container mx-auto p-4 md:p-8">
 	<h1 class="mb-4 text-2xl font-bold">Email Search</h1>
 
-	<form method="POST" class="mb-8 flex items-center gap-2">
+	<form method="POST" action="/dashboard/search" class="mb-8 flex items-center gap-2">
 		<Input
 			type="search"
 			name="query"

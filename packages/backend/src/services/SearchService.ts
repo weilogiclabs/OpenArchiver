@@ -40,7 +40,7 @@ export class SearchService {
         const searchParams: SearchParams = {
             limit,
             offset: (page - 1) * limit,
-            attributesToHighlight: ['body', 'attachments.*.content'],
+            attributesToHighlight: ['body', 'attachments.*.content', 'from', 'to', 'subject', 'cc', 'bcc'],
             showMatchesPosition: true,
             sort: ['timestamp:desc']
         };
