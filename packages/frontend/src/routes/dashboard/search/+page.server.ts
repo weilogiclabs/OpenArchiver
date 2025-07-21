@@ -1,7 +1,6 @@
-import type { PageServerLoad, Actions, RequestEvent } from './$types';
+import type { PageServerLoad, RequestEvent } from './$types';
 import { api } from '$lib/server/api';
 import type { SearchResult } from '@open-archiver/types';
-import { redirect } from '@sveltejs/kit';
 
 import type { MatchingStrategy } from '@open-archiver/types';
 
@@ -48,28 +47,4 @@ export const load: PageServerLoad = async (event) => {
     const matchingStrategy = (event.url.searchParams.get('matchingStrategy') ||
         'last') as MatchingStrategy;
     return performSearch(keywords, page, matchingStrategy, event);
-};
-
-export const actions: Actions = {
-    default: async (event) => {
-        const formData = await event.request.formData();
-        const keywords = formData.get('keywords') as string;
-        const matchingStrategy = formData.get('matchingStrategy') as MatchingStrategy;
-
-        if (keywords) {
-            throw redirect(
-                303,
-                `/dashboard/search?keywords=${encodeURIComponent(
-                    keywords
-                )}&page=1&matchingStrategy=${matchingStrategy}`
-            );
-        }
-
-        return {
-            searchResult: null,
-            keywords: '',
-            page: 1,
-            matchingStrategy: 'last'
-        };
-    }
 };

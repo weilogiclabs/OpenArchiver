@@ -11,15 +11,16 @@
 		CardDescription
 	} from '$lib/components/ui/card';
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 	import type { MatchingStrategy } from '@open-archiver/types';
 
 	let { data }: { data: PageData } = $props();
 	let searchResult = $derived(data.searchResult);
-	let keywords = $derived(data.keywords);
+	let keywords = $state(data.keywords || '');
 	let page = $derived(data.page);
 	let error = $derived(data.error);
-	let matchingStrategy: MatchingStrategy = $derived(
+	let matchingStrategy: MatchingStrategy = $state(
 		(data.matchingStrategy as MatchingStrategy) || 'last'
 	);
 
@@ -55,6 +56,14 @@
 				content.innerHTML = newHtml;
 			}
 		};
+	}
+
+	function handleSearch() {
+		const params = new URLSearchParams();
+		params.set('keywords', keywords);
+		params.set('page', '1');
+		params.set('matchingStrategy', matchingStrategy);
+		goto(`/dashboard/search?${params.toString()}`, { keepFocus: true });
 	}
 
 	function getHighlightedSnippets(text: string | undefined, snippetLength = 80): string[] {
@@ -163,30 +172,32 @@
 <div class="container mx-auto p-4 md:p-8">
 	<h1 class="mb-4 text-2xl font-bold">Email Search</h1>
 
-	<form method="POST" action="/dashboard/search?action=search" class="mb-8 flex flex-col space-y-2">
+	<form onsubmit={handleSearch} class="mb-8 flex flex-col space-y-2">
 		<div class="flex items-center gap-2">
 			<Input
 				type="search"
 				name="keywords"
 				placeholder="Search by keyword, sender, recipient..."
 				class=" h-12 flex-grow"
-				value={keywords}
+				bind:value={keywords}
 			/>
-
 			<Button type="submit" class="h-12 cursor-pointer">Search</Button>
 		</div>
-		<Select.Root type="single" name="matchingStrategy" bind:value={matchingStrategy}>
-			<Select.Trigger class=" w-[180px] cursor-pointer">
-				{triggerContent}
-			</Select.Trigger>
-			<Select.Content>
-				{#each strategies as strategy (strategy.value)}
-					<Select.Item value={strategy.value} label={strategy.label} class="cursor-pointer">
-						{strategy.label}
-					</Select.Item>
-				{/each}
-			</Select.Content>
-		</Select.Root>
+		<div class="mt-1 text-xs font-medium">Search options</div>
+		<div class="flex items-center gap-2">
+			<Select.Root type="single" name="matchingStrategy" bind:value={matchingStrategy}>
+				<Select.Trigger class=" w-[180px] cursor-pointer">
+					{triggerContent}
+				</Select.Trigger>
+				<Select.Content>
+					{#each strategies as strategy (strategy.value)}
+						<Select.Item value={strategy.value} label={strategy.label} class="cursor-pointer">
+							{strategy.label}
+						</Select.Item>
+					{/each}
+				</Select.Content>
+			</Select.Root>
+		</div>
 	</form>
 
 	{#if error}

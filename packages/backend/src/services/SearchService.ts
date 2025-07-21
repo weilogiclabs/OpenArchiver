@@ -35,7 +35,6 @@ export class SearchService {
 
     public async searchEmails(dto: SearchQuery): Promise<SearchResult> {
         const { query, filters, page = 1, limit = 10, matchingStrategy = 'last' } = dto;
-        console.log('matchingStrategy ', matchingStrategy);
         const index = await this.getIndex<EmailDocument>('emails');
 
         const searchParams: SearchParams = {
