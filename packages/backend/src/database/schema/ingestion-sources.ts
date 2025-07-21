@@ -25,6 +25,7 @@ export const ingestionSources = pgTable('ingestion_sources', {
     lastSyncStartedAt: timestamp('last_sync_started_at', { withTimezone: true }),
     lastSyncFinishedAt: timestamp('last_sync_finished_at', { withTimezone: true }),
     lastSyncStatusMessage: text('last_sync_status_message'),
+    syncState: jsonb('sync_state'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 });

@@ -10,6 +10,7 @@
         "start": "node dist/index.js",
         "start:ingestion-worker": "ts-node-dev --respawn --transpile-only src/workers/ingestion.worker.ts",
         "start:indexing-worker": "ts-node-dev --respawn --transpile-only src/workers/indexing.worker.ts",
+        "start:sync-scheduler": "ts-node-dev --respawn --transpile-only src/jobs/schedulers/sync-scheduler.ts",
         "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
         "db:push": "drizzle-kit push --config=drizzle.config.ts",
         "db:migrate": "ts-node-dev src/database/migrate.ts"

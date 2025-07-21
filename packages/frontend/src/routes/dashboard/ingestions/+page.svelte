@@ -89,7 +89,9 @@
 				{#if ingestionSources.length > 0}
 					{#each ingestionSources as source (source.id)}
 						<Table.Row>
-							<Table.Cell>{source.name}</Table.Cell>
+							<Table.Cell>
+								<a href="/dashboard/archived-emails?ingestionSourceId={source.id}">{source.name}</a>
+							</Table.Cell>
 							<Table.Cell>{source.provider}</Table.Cell>
 							<Table.Cell>{source.status}</Table.Cell>
 							<Table.Cell>{new Date(source.createdAt).toLocaleDateString()}</Table.Cell>

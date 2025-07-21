@@ -25,7 +25,7 @@ export class IngestionService {
         const decryptedCredentials = CryptoService.decryptObject<IngestionCredentials>(
             source.credentials as string
         );
-        return { ...source, credentials: decryptedCredentials };
+        return { ...source, credentials: decryptedCredentials } as IngestionSource;
     }
 
     public static async create(dto: CreateIngestionSourceDto): Promise<IngestionSource> {
@@ -139,19 +139,34 @@ export class IngestionService {
         });
 
         const connector = EmailProviderFactory.createConnector(source);
-        const storage = new StorageService();
 
         try {
-            for await (const email of connector.fetchEmails()) {
-                await this.processEmail(email, source, storage);
+            if (connector.listAllUsers) {
+                // For multi-mailbox providers, dispatch a job for each user
+                for await (const user of connector.listAllUsers()) {
+                    const userEmail = (user as any).primaryEmail;
+                    if (userEmail) {
+                        await ingestionQueue.add('process-mailbox', {
+                            ingestionSourceId: source.id,
+                            userEmail: userEmail,
+                        });
+                    }
+                }
+            } else {
+                // For single-mailbox providers, dispatch a single job
+                await ingestionQueue.add('process-mailbox', {
+                    ingestionSourceId: source.id,
+                    userEmail: 'default' // Placeholder, as it's not needed for IMAP
+                });
             }
+
 
             await IngestionService.update(ingestionSourceId, {
                 status: 'active',
                 lastSyncFinishedAt: new Date(),
-                lastSyncStatusMessage: 'Successfully completed bulk import.'
+                lastSyncStatusMessage: 'Successfully initiated bulk import for all mailboxes.'
             });
-            console.log(`Bulk import finished for source: ${source.name} (${source.id})`);
+            console.log(`Bulk import job dispatch finished for source: ${source.name} (${source.id})`);
         } catch (error) {
             console.error(`Bulk import failed for source: ${source.name} (${source.id})`, error);
             await IngestionService.update(ingestionSourceId, {
@@ -236,7 +251,7 @@ export class IngestionService {
             const storageService = new StorageService();
             const databaseService = new DatabaseService();
             const indexingService = new IndexingService(databaseService, searchService, storageService);
-            await indexingService.indexByEmail(email, source.id);
+            await indexingService.indexByEmail(email, source.id, archivedEmail.id);
         } catch (error) {
             logger.error({
                 message: `Failed to process email ${email.id} for source ${source.id}`,

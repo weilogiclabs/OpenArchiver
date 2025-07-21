@@ -43,6 +43,13 @@
       "when": 1752606327253,
       "tag": "0005_chunky_sue_storm",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1753112018514,
+      "tag": "0006_majestic_caretaker",
+      "breakpoints": true
     }
   ]
 }

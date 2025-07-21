@@ -4,7 +4,7 @@
     "scripts": {
         "dev": "dotenv -- pnpm --filter \"./packages/*\" --parallel dev",
         "build": "pnpm --filter \"./packages/*\" --parallel build",
-        "start:workers": "dotenv -- concurrently \"pnpm --filter @open-archiver/backend start:ingestion-worker\" \"pnpm --filter @open-archiver/backend start:indexing-worker\""
+        "start:workers": "dotenv -- concurrently \"pnpm --filter @open-archiver/backend start:ingestion-worker\" \"pnpm --filter @open-archiver/backend start:indexing-worker\" \"pnpm --filter @open-archiver/backend start:sync-scheduler\""
     },
     "devDependencies": {
         "concurrently": "^9.2.0",

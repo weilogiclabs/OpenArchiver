@@ -1,0 +1,1 @@
+ALTER TABLE "ingestion_sources" ADD COLUMN "sync_state" jsonb;

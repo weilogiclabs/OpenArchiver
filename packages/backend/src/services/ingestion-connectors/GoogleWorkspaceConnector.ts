@@ -3,7 +3,8 @@ import type { admin_directory_v1, gmail_v1, Common } from 'googleapis';
 import type {
     GoogleWorkspaceCredentials,
     EmailObject,
-    EmailAddress
+    EmailAddress,
+    SyncState
 } from '@open-archiver/types';
 import type { IEmailConnector } from '../EmailProviderFactory';
 import { logger } from '../../config/logger';
@@ -16,6 +17,7 @@ import { simpleParser, ParsedMail, Attachment, AddressObject } from 'mailparser'
 export class GoogleWorkspaceConnector implements IEmailConnector {
     private credentials: GoogleWorkspaceCredentials;
     private serviceAccountCreds: { client_email: string; private_key: string; };
+    private newHistoryId: string | undefined;
 
     constructor(credentials: GoogleWorkspaceCredentials) {
         this.credentials = credentials;
@@ -113,32 +115,105 @@ export class GoogleWorkspaceConnector implements IEmailConnector {
     }
 
     /**
-     * Fetches emails for a single user, starting from a specific point in time.
+     * Fetches emails for a single user, starting from a specific history ID.
      * This is ideal for continuous synchronization jobs.
      * @param userEmail The email of the user whose mailbox will be read.
-     * @param since Optional date to fetch emails newer than this timestamp.
+     * @param syncState Optional state containing the startHistoryId.
      * @returns An async generator that yields each raw email object.
      */
     public async *fetchEmails(
         userEmail: string,
-        since?: Date
+        syncState?: SyncState | null
     ): AsyncGenerator<EmailObject> {
         const authClient = this.getAuthClient(userEmail, [
             'https://www.googleapis.com/auth/gmail.readonly'
         ]);
-
         const gmail = google.gmail({ version: 'v1', auth: authClient });
         let pageToken: string | undefined = undefined;
 
-        const query = since ? `after:${Math.floor(since.getTime() / 1000)}` : '';
+        const startHistoryId = syncState?.google?.[userEmail]?.historyId;
+
+        // If no sync state is provided for this user, this is an initial import. Get all messages.
+        if (!startHistoryId) {
+            yield* this.fetchAllMessagesForUser(gmail, userEmail);
+            return;
+        }
+
+        this.newHistoryId = startHistoryId;
 
         do {
-            const listResponse: Common.GaxiosResponseWithHTTP2<gmail_v1.Schema$ListMessagesResponse> =
-                await gmail.users.messages.list({
-                    userId: 'me', // 'me' refers to the impersonated user
-                    q: query,
-                    pageToken: pageToken
-                });
+            const historyResponse: Common.GaxiosResponseWithHTTP2<gmail_v1.Schema$ListHistoryResponse> = await gmail.users.history.list({
+                userId: 'me',
+                startHistoryId: this.newHistoryId,
+                pageToken: pageToken,
+                historyTypes: ['messageAdded']
+            });
+
+            const histories = historyResponse.data.history;
+            if (!histories || histories.length === 0) {
+                return;
+            }
+
+            for (const historyRecord of histories) {
+                if (historyRecord.messagesAdded) {
+                    for (const messageAdded of historyRecord.messagesAdded) {
+                        if (messageAdded.message?.id) {
+                            const msgResponse = await gmail.users.messages.get({
+                                userId: 'me',
+                                id: messageAdded.message.id,
+                                format: 'RAW'
+                            });
+
+                            if (msgResponse.data.raw) {
+                                const rawEmail = Buffer.from(msgResponse.data.raw, 'base64url');
+                                const parsedEmail: ParsedMail = await simpleParser(rawEmail);
+                                const attachments = parsedEmail.attachments.map((attachment: Attachment) => ({
+                                    filename: attachment.filename || 'untitled',
+                                    contentType: attachment.contentType,
+                                    size: attachment.size,
+                                    content: attachment.content as Buffer
+                                }));
+                                const mapAddresses = (addresses: AddressObject | AddressObject[] | undefined): EmailAddress[] => {
+                                    if (!addresses) return [];
+                                    const addressArray = Array.isArray(addresses) ? addresses : [addresses];
+                                    return addressArray.flatMap(a => a.value.map(v => ({ name: v.name, address: v.address || '' })));
+                                };
+                                yield {
+                                    id: msgResponse.data.id!,
+                                    userEmail: userEmail,
+                                    eml: rawEmail,
+                                    from: mapAddresses(parsedEmail.from),
+                                    to: mapAddresses(parsedEmail.to),
+                                    cc: mapAddresses(parsedEmail.cc),
+                                    bcc: mapAddresses(parsedEmail.bcc),
+                                    subject: parsedEmail.subject || '',
+                                    body: parsedEmail.text || '',
+                                    html: parsedEmail.html || '',
+                                    headers: parsedEmail.headers as any,
+                                    attachments,
+                                    receivedAt: parsedEmail.date || new Date(),
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+
+            pageToken = historyResponse.data.nextPageToken ?? undefined;
+            if (historyResponse.data.historyId) {
+                this.newHistoryId = historyResponse.data.historyId;
+            }
+
+        } while (pageToken);
+    }
+
+    private async *fetchAllMessagesForUser(gmail: gmail_v1.Gmail, userEmail: string): AsyncGenerator<EmailObject> {
+        let pageToken: string | undefined = undefined;
+        do {
+            const listResponse: Common.GaxiosResponseWithHTTP2<gmail_v1.Schema$ListMessagesResponse> = await gmail.users.messages.list({
+                userId: 'me',
+                pageToken: pageToken
+            });
 
             const messages = listResponse.data.messages;
             if (!messages || messages.length === 0) {
@@ -150,27 +225,23 @@ export class GoogleWorkspaceConnector implements IEmailConnector {
                     const msgResponse = await gmail.users.messages.get({
                         userId: 'me',
                         id: message.id,
-                        format: 'RAW' // We want the full, raw .eml content
+                        format: 'RAW'
                     });
 
                     if (msgResponse.data.raw) {
-                        // The raw data is base64url encoded, so we need to decode it.
                         const rawEmail = Buffer.from(msgResponse.data.raw, 'base64url');
                         const parsedEmail: ParsedMail = await simpleParser(rawEmail);
-
                         const attachments = parsedEmail.attachments.map((attachment: Attachment) => ({
                             filename: attachment.filename || 'untitled',
                             contentType: attachment.contentType,
                             size: attachment.size,
                             content: attachment.content as Buffer
                         }));
-
                         const mapAddresses = (addresses: AddressObject | AddressObject[] | undefined): EmailAddress[] => {
                             if (!addresses) return [];
                             const addressArray = Array.isArray(addresses) ? addresses : [addresses];
                             return addressArray.flatMap(a => a.value.map(v => ({ name: v.name, address: v.address || '' })));
                         };
-
                         yield {
                             id: msgResponse.data.id!,
                             userEmail: userEmail,
@@ -189,8 +260,26 @@ export class GoogleWorkspaceConnector implements IEmailConnector {
                     }
                 }
             }
-
             pageToken = listResponse.data.nextPageToken ?? undefined;
         } while (pageToken);
+
+        // After fetching all messages, get the latest history ID to use as the starting point for the next sync.
+        const profileResponse = await gmail.users.getProfile({ userId: 'me' });
+        if (profileResponse.data.historyId) {
+            this.newHistoryId = profileResponse.data.historyId;
+        }
+    }
+
+    public getUpdatedSyncState(userEmail: string): SyncState {
+        if (!this.newHistoryId) {
+            return {};
+        }
+        return {
+            google: {
+                [userEmail]: {
+                    historyId: this.newHistoryId
+                }
+            }
+        };
     }
 }

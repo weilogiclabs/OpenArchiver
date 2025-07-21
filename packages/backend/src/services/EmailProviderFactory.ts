@@ -3,7 +3,8 @@ import type {
     GoogleWorkspaceCredentials,
     Microsoft365Credentials,
     GenericImapCredentials,
-    EmailObject
+    EmailObject,
+    SyncState
 } from '@open-archiver/types';
 import { GoogleWorkspaceConnector } from './ingestion-connectors/GoogleWorkspaceConnector';
 import { MicrosoftConnector } from './ingestion-connectors/MicrosoftConnector';
@@ -12,7 +13,8 @@ import { ImapConnector } from './ingestion-connectors/ImapConnector';
 // Define a common interface for all connectors
 export interface IEmailConnector {
     testConnection(): Promise<boolean>;
-    fetchEmails(userEmail?: string, since?: Date): AsyncGenerator<EmailObject>;
+    fetchEmails(userEmail: string, syncState?: SyncState | null): AsyncGenerator<EmailObject>;
+    getUpdatedSyncState(userEmail?: string): SyncState;
     listAllUsers?(): AsyncGenerator<any>;
 }
 

@@ -1,3 +1,20 @@
+export type SyncState = {
+    google?: {
+        [userEmail: string]: {
+            historyId: string;
+        };
+    };
+    microsoft?: {
+        [userEmail: string]: {
+            deltaToken: string;
+        };
+    };
+    imap?: {
+        maxUid: number;
+    };
+    lastSyncTimestamp?: string;
+};
+
 export type IngestionProvider = 'google_workspace' | 'microsoft_365' | 'generic_imap';
 
 export type IngestionStatus =
@@ -51,6 +68,10 @@ export interface IngestionSource {
     createdAt: Date;
     updatedAt: Date;
     credentials: IngestionCredentials;
+    lastSyncStartedAt?: Date | null;
+    lastSyncFinishedAt?: Date | null;
+    lastSyncStatusMessage?: string | null;
+    syncState?: SyncState | null;
 }
 
 export interface CreateIngestionSourceDto {
@@ -67,6 +88,11 @@ export interface UpdateIngestionSourceDto {
     lastSyncStartedAt?: Date;
     lastSyncFinishedAt?: Date;
     lastSyncStatusMessage?: string;
+    syncState?: SyncState;
+}
+
+export interface IContinuousSyncJob {
+    ingestionSourceId: string;
 }
 
 export interface IInitialImportJob {

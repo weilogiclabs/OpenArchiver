@@ -73,7 +73,7 @@ export class IndexingService {
     /**
      * Indexes an email object directly, creates a search document, and indexes it.
      */
-    public async indexByEmail(email: EmailObject, ingestionSourceId: string): Promise<void> {
+    public async indexByEmail(email: EmailObject, ingestionSourceId: string, archivedEmailId: string): Promise<void> {
         const attachments: AttachmentsType = [];
         if (email.attachments && email.attachments.length > 0) {
             for (const attachment of email.attachments) {
@@ -84,7 +84,7 @@ export class IndexingService {
                 });
             }
         }
-        const document = await this.createEmailDocumentFromRaw(email, attachments, ingestionSourceId);
+        const document = await this.createEmailDocumentFromRaw(email, attachments, ingestionSourceId, archivedEmailId);
         await this.searchService.addDocuments('emails', [document], 'id');
     }
 
@@ -94,7 +94,8 @@ export class IndexingService {
     private async createEmailDocumentFromRaw(
         email: EmailObject,
         attachments: AttachmentsType,
-        ingestionSourceId: string
+        ingestionSourceId: string,
+        archivedEmailId: string
     ): Promise<EmailDocument> {
         const extractedAttachments = [];
         for (const attachment of attachments) {
@@ -116,7 +117,7 @@ export class IndexingService {
             }
         }
         return {
-            id: email.id,
+            id: archivedEmailId,
             from: email.from[0]?.address,
             to: email.to.map((i) => i.address) || [],
             cc: email.cc?.map((i) => i.address) || [],

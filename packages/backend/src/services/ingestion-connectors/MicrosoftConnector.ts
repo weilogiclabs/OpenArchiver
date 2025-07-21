@@ -1,4 +1,4 @@
-import type { Microsoft365Credentials, EmailObject, EmailAddress } from '@open-archiver/types';
+import type { Microsoft365Credentials, EmailObject, EmailAddress, SyncState } from '@open-archiver/types';
 import type { IEmailConnector } from '../EmailProviderFactory';
 import { ConfidentialClientApplication } from '@azure/msal-node';
 import { simpleParser, ParsedMail, Attachment, AddressObject } from 'mailparser';
@@ -8,6 +8,7 @@ const GRAPH_API_ENDPOINT = 'https://graph.microsoft.com/v1.0';
 
 export class MicrosoftConnector implements IEmailConnector {
     private cca: ConfidentialClientApplication;
+    private newDeltaToken: string | undefined;
 
     constructor(private credentials: Microsoft365Credentials) {
         this.cca = new ConfidentialClientApplication({
@@ -38,23 +39,42 @@ export class MicrosoftConnector implements IEmailConnector {
         }
     }
 
-    public async *fetchEmails(userEmail?: string, since?: Date): AsyncGenerator<EmailObject> {
+    public async *fetchEmails(userEmail: string, syncState?: SyncState | null): AsyncGenerator<EmailObject> {
         const accessToken = await this.getAccessToken();
         const headers = { Authorization: `Bearer ${accessToken}` };
 
-        let nextLink: string | undefined = `${GRAPH_API_ENDPOINT}/users/me/messages`;
-        if (since) {
-            nextLink += `?$filter=receivedDateTime ge ${since.toISOString()}`;
+        let nextLink: string | undefined;
+
+        const deltaToken = syncState?.microsoft?.[userEmail]?.deltaToken;
+
+        if (deltaToken) {
+            nextLink = `${GRAPH_API_ENDPOINT}/me/mailFolders/allmail/messages/delta?$deltaToken=${deltaToken}`;
+        } else {
+            nextLink = `${GRAPH_API_ENDPOINT}/me/mailFolders/allmail/messages/delta`;
         }
 
+
         while (nextLink) {
-            const res: { data: { value: any[]; '@odata.nextLink'?: string; }; } = await axios.get(
+            const res: { data: { value: any[]; '@odata.nextLink'?: string; '@odata.deltaLink'?: string; }; } = await axios.get(
                 nextLink,
                 { headers }
             );
             const messages = res.data.value;
 
+            const deltaLink = res.data['@odata.deltaLink'];
+            if (deltaLink) {
+                const deltaToken = new URL(deltaLink).searchParams.get('$deltatoken');
+                if (deltaToken) {
+                    this.newDeltaToken = deltaToken;
+                }
+            }
+
+
             for (const message of messages) {
+                // Skip if the message is deleted
+                if (message['@removed']) {
+                    continue;
+                }
                 const rawContentRes = await axios.get(
                     `${GRAPH_API_ENDPOINT}/users/me/messages/${message.id}/$value`,
                     { headers }
@@ -95,5 +115,18 @@ export class MicrosoftConnector implements IEmailConnector {
             }
             nextLink = res.data['@odata.nextLink'];
         }
+    }
+
+    public getUpdatedSyncState(userEmail: string): SyncState {
+        if (!this.newDeltaToken) {
+            return {};
+        }
+        return {
+            microsoft: {
+                [userEmail]: {
+                    deltaToken: this.newDeltaToken
+                }
+            }
+        };
     }
 }
