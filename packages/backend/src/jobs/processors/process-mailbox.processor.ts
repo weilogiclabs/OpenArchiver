@@ -61,7 +61,6 @@ export const processMailboxProcessor = async (job: Job<IProcessMailboxJob, any, 
                 })
                 .where(eq(ingestionSources.id, ingestionSourceId));
         }
-
         logger.info({ ingestionSourceId, userEmail }, `Finished processing mailbox for user`);
     } catch (error) {
         logger.error({ err: error, ingestionSourceId, userEmail }, 'Error processing mailbox');

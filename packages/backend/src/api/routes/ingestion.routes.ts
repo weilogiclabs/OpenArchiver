@@ -24,5 +24,7 @@ export const createIngestionRouter = (
 
     router.post('/:id/sync', ingestionController.triggerInitialImport);
 
+    router.post('/:id/pause', ingestionController.pause);
+
     return router;
 };

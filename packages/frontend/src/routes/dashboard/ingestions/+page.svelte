@@ -5,6 +5,7 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { MoreHorizontal } from 'lucide-svelte';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import { Switch } from '$lib/components/ui/switch';
 	import IngestionSourceForm from '$lib/components/custom/IngestionSourceForm.svelte';
 	import { api } from '$lib/api.client';
 	import type { IngestionSource, CreateIngestionSourceDto } from '@open-archiver/types';
@@ -44,6 +45,27 @@
 		ingestionSources = updatedSources;
 	};
 
+	const handleToggle = async (source: IngestionSource) => {
+		const isPaused = source.status === 'paused';
+		const newStatus = isPaused ? 'active' : 'paused';
+
+		if (newStatus === 'paused') {
+			await api(`/ingestion-sources/${source.id}/pause`, { method: 'POST' });
+		} else {
+			await api(`/ingestion-sources/${source.id}`, {
+				method: 'PUT',
+				body: JSON.stringify({ status: 'active' })
+			});
+		}
+
+		ingestionSources = ingestionSources.map((s) => {
+			if (s.id === source.id) {
+				return { ...s, status: newStatus };
+			}
+			return s;
+		});
+	};
+
 	const handleFormSubmit = async (formData: CreateIngestionSourceDto) => {
 		if (selectedSource) {
 			// Update
@@ -81,6 +103,7 @@
 					<Table.Head>Name</Table.Head>
 					<Table.Head>Provider</Table.Head>
 					<Table.Head>Status</Table.Head>
+					<Table.Head>Active</Table.Head>
 					<Table.Head>Created At</Table.Head>
 					<Table.Head class="text-right">Actions</Table.Head>
 				</Table.Row>
@@ -93,7 +116,20 @@
 								<a href="/dashboard/archived-emails?ingestionSourceId={source.id}">{source.name}</a>
 							</Table.Cell>
 							<Table.Cell>{source.provider}</Table.Cell>
-							<Table.Cell>{source.status}</Table.Cell>
+							<Table.Cell class=" min-w-24">
+								<span>
+									{source.status}
+								</span>
+							</Table.Cell>
+							<Table.Cell>
+								<Switch
+									id={`active-switch-${source.id}`}
+									class="cursor-pointer"
+									checked={source.status !== 'paused'}
+									onCheckedChange={() => handleToggle(source)}
+									disabled={source.status !== 'active' && source.status !== 'paused'}
+								/>
+							</Table.Cell>
 							<Table.Cell>{new Date(source.createdAt).toLocaleDateString()}</Table.Cell>
 							<Table.Cell class="text-right">
 								<DropdownMenu.Root>
