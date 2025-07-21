@@ -1,10 +1,13 @@
 import type { EmailDocument } from './email.types';
 
+export type MatchingStrategy = 'last' | 'all' | 'frequency';
+
 export interface SearchQuery {
     query: string;
     filters?: Record<string, any>;
     page?: number;
     limit?: number;
+    matchingStrategy?: MatchingStrategy;
 }
 
 export interface SearchHit extends EmailDocument {

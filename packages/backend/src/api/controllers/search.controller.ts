@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { SearchService } from '../../services/SearchService';
-import type { SearchQuery } from '@open-archiver/types';
+import { MatchingStrategies } from 'meilisearch';
 
 export class SearchController {
     private searchService: SearchService;
@@ -11,7 +11,7 @@ export class SearchController {
 
     public search = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { keywords, page, limit } = req.query;
+            const { keywords, page, limit, matchingStrategy } = req.query;
 
             if (!keywords) {
                 res.status(400).json({ message: 'Keywords are required' });
@@ -21,7 +21,8 @@ export class SearchController {
             const results = await this.searchService.searchEmails({
                 query: keywords as string,
                 page: page ? parseInt(page as string) : 1,
-                limit: limit ? parseInt(limit as string) : 10
+                limit: limit ? parseInt(limit as string) : 10,
+                matchingStrategy: matchingStrategy as MatchingStrategies
             });
 
             res.status(200).json(results);

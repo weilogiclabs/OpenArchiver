@@ -34,15 +34,17 @@ export class SearchService {
     }
 
     public async searchEmails(dto: SearchQuery): Promise<SearchResult> {
-        const { query, filters, page = 1, limit = 10 } = dto;
+        const { query, filters, page = 1, limit = 10, matchingStrategy = 'last' } = dto;
+        console.log('matchingStrategy ', matchingStrategy);
         const index = await this.getIndex<EmailDocument>('emails');
 
         const searchParams: SearchParams = {
             limit,
             offset: (page - 1) * limit,
-            attributesToHighlight: ["*"],
+            attributesToHighlight: ['*'],
             showMatchesPosition: true,
-            sort: ['timestamp:desc']
+            sort: ['timestamp:desc'],
+            matchingStrategy
         };
 
         if (filters) {

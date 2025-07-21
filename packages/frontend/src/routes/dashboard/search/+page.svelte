@@ -2,6 +2,7 @@
 	import type { PageData } from './$types';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
+	import * as Select from '$lib/components/ui/select';
 	import {
 		Card,
 		CardContent,
@@ -11,12 +12,26 @@
 	} from '$lib/components/ui/card';
 	import { onMount } from 'svelte';
 	import { Skeleton } from '$lib/components/ui/skeleton';
+	import type { MatchingStrategy } from '@open-archiver/types';
 
 	let { data }: { data: PageData } = $props();
 	let searchResult = $derived(data.searchResult);
 	let keywords = $derived(data.keywords);
 	let page = $derived(data.page);
 	let error = $derived(data.error);
+	let matchingStrategy: MatchingStrategy = $derived(
+		(data.matchingStrategy as MatchingStrategy) || 'last'
+	);
+
+	const strategies = [
+		{ value: 'last', label: 'Fuzzy' },
+		{ value: 'all', label: 'Verbatim' },
+		{ value: 'frequency', label: 'Frequency' }
+	];
+
+	const triggerContent = $derived(
+		strategies.find((s) => s.value === matchingStrategy)?.label ?? 'Select a strategy'
+	);
 
 	let isMounted = $state(false);
 	onMount(() => {
@@ -148,15 +163,30 @@
 <div class="container mx-auto p-4 md:p-8">
 	<h1 class="mb-4 text-2xl font-bold">Email Search</h1>
 
-	<form method="POST" action="/dashboard/search?action=search" class="mb-8 flex items-center gap-2">
-		<Input
-			type="search"
-			name="keywords"
-			placeholder="Search by keyword, sender, recipient..."
-			class="flex-grow"
-			value={keywords}
-		/>
-		<Button type="submit">Search</Button>
+	<form method="POST" action="/dashboard/search?action=search" class="mb-8 flex flex-col space-y-2">
+		<div class="flex items-center gap-2">
+			<Input
+				type="search"
+				name="keywords"
+				placeholder="Search by keyword, sender, recipient..."
+				class=" h-12 flex-grow"
+				value={keywords}
+			/>
+
+			<Button type="submit" class="h-12 cursor-pointer">Search</Button>
+		</div>
+		<Select.Root type="single" name="matchingStrategy" bind:value={matchingStrategy}>
+			<Select.Trigger class=" w-[180px] cursor-pointer">
+				{triggerContent}
+			</Select.Trigger>
+			<Select.Content>
+				{#each strategies as strategy (strategy.value)}
+					<Select.Item value={strategy.value} label={strategy.label} class="cursor-pointer">
+						{strategy.label}
+					</Select.Item>
+				{/each}
+			</Select.Content>
+		</Select.Root>
 	</form>
 
 	{#if error}
@@ -255,7 +285,9 @@
 		{#if searchResult.total > searchResult.limit}
 			<div class="mt-8 flex flex-row items-center justify-center space-x-2">
 				<a
-					href={`/dashboard/search?keywords=${keywords}&page=${page - 1}`}
+					href={`/dashboard/search?keywords=${keywords}&page=${
+						page - 1
+					}&matchingStrategy=${matchingStrategy}`}
 					class={page === 1 ? 'pointer-events-none' : ''}
 				>
 					<Button variant="outline" disabled={page === 1}>Prev</Button>
@@ -263,7 +295,9 @@
 
 				{#each paginationItems as item}
 					{#if typeof item === 'number'}
-						<a href={`/dashboard/search?keywords=${keywords}&page=${item}`}>
+						<a
+							href={`/dashboard/search?keywords=${keywords}&page=${item}&matchingStrategy=${matchingStrategy}`}
+						>
 							<Button variant={item === page ? 'default' : 'outline'}>{item}</Button>
 						</a>
 					{:else}
@@ -272,7 +306,9 @@
 				{/each}
 
 				<a
-					href={`/dashboard/search?keywords=${keywords}&page=${page + 1}`}
+					href={`/dashboard/search?keywords=${keywords}&page=${
+						page + 1
+					}&matchingStrategy=${matchingStrategy}`}
 					class={page === Math.ceil(searchResult.total / searchResult.limit)
 						? 'pointer-events-none'
 						: ''}
