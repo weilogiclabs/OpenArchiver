@@ -62,7 +62,8 @@ export class SearchService {
             total: searchResults.estimatedTotalHits ?? searchResults.hits.length,
             page,
             limit,
-            totalPages: Math.ceil((searchResults.estimatedTotalHits ?? searchResults.hits.length) / limit)
+            totalPages: Math.ceil((searchResults.estimatedTotalHits ?? searchResults.hits.length) / limit),
+            processingTimeMs: searchResults.processingTimeMs
         };
     }
 

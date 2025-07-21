@@ -11,18 +11,17 @@ export class SearchController {
 
     public search = async (req: Request, res: Response): Promise<void> => {
         try {
-            const { query, filters, page, limit } = req.body as SearchQuery;
+            const { keywords, page, limit } = req.query;
 
-            if (!query) {
-                res.status(400).json({ message: 'Query is required' });
+            if (!keywords) {
+                res.status(400).json({ message: 'Keywords are required' });
                 return;
             }
 
             const results = await this.searchService.searchEmails({
-                query,
-                filters,
-                page,
-                limit
+                query: keywords as string,
+                page: page ? parseInt(page as string) : 1,
+                limit: limit ? parseInt(limit as string) : 10
             });
 
             res.status(200).json(results);

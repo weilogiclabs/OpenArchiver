@@ -20,4 +20,5 @@ export interface SearchResult {
     page: number;
     limit: number;
     totalPages: number;
+    processingTimeMs: number;
 }

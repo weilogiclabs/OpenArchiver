@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ActionData, PageData } from './$types';
+	import type { PageData } from './$types';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import {
@@ -12,10 +12,11 @@
 	import { onMount } from 'svelte';
 	import { Skeleton } from '$lib/components/ui/skeleton';
 
-	let { data, form }: { data: PageData; form: ActionData } = $props();
-	const searchResult = form?.searchResult ?? data.searchResult;
-	const query = form?.query ?? data.query;
-	const error = form?.error;
+	let { data }: { data: PageData } = $props();
+	let searchResult = $derived(data.searchResult);
+	let keywords = $derived(data.keywords);
+	let page = $derived(data.page);
+	let error = $derived(data.error);
 
 	let isMounted = $state(false);
 	onMount(() => {
@@ -91,6 +92,52 @@
 
 		return snippets;
 	}
+
+	const getPaginationItems = (currentPage: number, totalPages: number, siblingCount = 1) => {
+		const totalPageNumbers = siblingCount + 5;
+
+		if (totalPages <= totalPageNumbers) {
+			return Array.from({ length: totalPages }, (_, i) => i + 1);
+		}
+
+		const leftSiblingIndex = Math.max(currentPage - siblingCount, 1);
+		const rightSiblingIndex = Math.min(currentPage + siblingCount, totalPages);
+
+		const shouldShowLeftDots = leftSiblingIndex > 2;
+		const shouldShowRightDots = rightSiblingIndex < totalPages - 2;
+
+		const firstPageIndex = 1;
+		const lastPageIndex = totalPages;
+
+		if (!shouldShowLeftDots && shouldShowRightDots) {
+			let leftItemCount = 3 + 2 * siblingCount;
+			let leftRange = Array.from({ length: leftItemCount }, (_, i) => i + 1);
+			return [...leftRange, '...', totalPages];
+		}
+
+		if (shouldShowLeftDots && !shouldShowRightDots) {
+			let rightItemCount = 3 + 2 * siblingCount;
+			let rightRange = Array.from(
+				{ length: rightItemCount },
+				(_, i) => totalPages - rightItemCount + i + 1
+			);
+			return [firstPageIndex, '...', ...rightRange];
+		}
+
+		if (shouldShowLeftDots && shouldShowRightDots) {
+			let middleRange = Array.from(
+				{ length: rightSiblingIndex - leftSiblingIndex + 1 },
+				(_, i) => leftSiblingIndex + i
+			);
+			return [firstPageIndex, '...', ...middleRange, '...', lastPageIndex];
+		}
+
+		return [];
+	};
+
+	let paginationItems = $derived(
+		getPaginationItems(page, Math.ceil((searchResult?.total || 0) / (searchResult?.limit || 10)))
+	);
 </script>
 
 <svelte:head>
@@ -101,13 +148,13 @@
 <div class="container mx-auto p-4 md:p-8">
 	<h1 class="mb-4 text-2xl font-bold">Email Search</h1>
 
-	<form method="POST" action="/dashboard/search" class="mb-8 flex items-center gap-2">
+	<form method="POST" action="/dashboard/search?action=search" class="mb-8 flex items-center gap-2">
 		<Input
 			type="search"
-			name="query"
+			name="keywords"
 			placeholder="Search by keyword, sender, recipient..."
 			class="flex-grow"
-			value={query}
+			value={keywords}
 		/>
 		<Button type="submit">Search</Button>
 	</form>
@@ -119,7 +166,7 @@
 	{#if searchResult}
 		<p class="text-muted-foreground mb-4">
 			{#if searchResult.total > 0}
-				Found {searchResult.total} results in {searchResult.hits.length / 1000}s
+				Found {searchResult.total} results in {searchResult.processingTimeMs / 1000}s
 			{:else}
 				Found {searchResult.total} results
 			{/if}
@@ -204,5 +251,38 @@
 				</a>
 			{/each}
 		</div>
+
+		{#if searchResult.total > searchResult.limit}
+			<div class="mt-8 flex flex-row items-center justify-center space-x-2">
+				<a
+					href={`/dashboard/search?keywords=${keywords}&page=${page - 1}`}
+					class={page === 1 ? 'pointer-events-none' : ''}
+				>
+					<Button variant="outline" disabled={page === 1}>Prev</Button>
+				</a>
+
+				{#each paginationItems as item}
+					{#if typeof item === 'number'}
+						<a href={`/dashboard/search?keywords=${keywords}&page=${item}`}>
+							<Button variant={item === page ? 'default' : 'outline'}>{item}</Button>
+						</a>
+					{:else}
+						<span class="px-4 py-2">...</span>
+					{/if}
+				{/each}
+
+				<a
+					href={`/dashboard/search?keywords=${keywords}&page=${page + 1}`}
+					class={page === Math.ceil(searchResult.total / searchResult.limit)
+						? 'pointer-events-none'
+						: ''}
+				>
+					<Button
+						variant="outline"
+						disabled={page === Math.ceil(searchResult.total / searchResult.limit)}>Next</Button
+					>
+				</a>
+			</div>
+		{/if}
 	{/if}
 </div>

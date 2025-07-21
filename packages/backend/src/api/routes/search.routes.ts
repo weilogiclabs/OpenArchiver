@@ -11,7 +11,7 @@ export const createSearchRouter = (
 
     router.use(requireAuth(authService));
 
-    router.post('/', searchController.search);
+    router.get('/', searchController.search);
 
     return router;
 };
