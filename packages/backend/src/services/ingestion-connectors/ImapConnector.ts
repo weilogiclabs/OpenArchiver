@@ -34,10 +34,19 @@ export class ImapConnector implements IEmailConnector {
     public async *fetchEmails(userEmail: string, syncState?: SyncState | null): AsyncGenerator<EmailObject> {
         await this.client.connect();
         try {
-            await this.client.mailboxOpen('INBOX');
+            const mailbox = await this.client.mailboxOpen('INBOX');
 
             const lastUid = syncState?.imap?.maxUid;
             this.newMaxUid = lastUid || 0;
+
+            // Determine the highest UID in the mailbox currently.
+            // This ensures that even if no new emails are fetched, the sync state is updated to the latest UID.
+            if (mailbox.exists > 0) {
+                const highestUidInMailbox = mailbox.uidNext - 1;
+                if (highestUidInMailbox > this.newMaxUid) {
+                    this.newMaxUid = highestUidInMailbox;
+                }
+            }
 
             // If lastUid exists, fetch all emails with a UID greater than it.
             // Otherwise, fetch all emails.
