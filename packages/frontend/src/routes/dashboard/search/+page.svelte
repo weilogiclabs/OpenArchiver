@@ -9,93 +9,84 @@
 		CardTitle,
 		CardDescription
 	} from '$lib/components/ui/card';
-	import type { SearchResult } from '@open-archiver/types';
+	import { onMount } from 'svelte';
+	import { Skeleton } from '$lib/components/ui/skeleton';
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	const searchResult = form?.searchResult ?? data.searchResult;
-	console.log(searchResult);
 	const query = form?.query ?? data.query;
 	const error = form?.error;
 
-	function escapeHTML(text: string) {
-		if (!text) return '';
-		return text
-			.replace(/&/g, '&')
-			.replace(/</g, '<')
-			.replace(/>/g, '>')
-			.replace(/"/g, '"')
-			.replace(/'/g, '&#039;')
-			.replace('<html', '')
-			.replace('</html>', '');
+	let isMounted = $state(false);
+	onMount(() => {
+		isMounted = true;
+	});
+
+	function shadowRender(node: HTMLElement, html: string | undefined) {
+		if (html === undefined) return;
+
+		const shadow = node.attachShadow({ mode: 'open' });
+		const style = document.createElement('style');
+		style.textContent = `em { background-color: #fde047; font-style: normal; color: #1f2937; }`; // yellow-300, gray-800
+		shadow.appendChild(style);
+		const content = document.createElement('div');
+		content.innerHTML = html;
+		shadow.appendChild(content);
+
+		return {
+			update(newHtml: string | undefined) {
+				if (newHtml === undefined) return;
+				content.innerHTML = newHtml;
+			}
+		};
 	}
 
-	function getHighlightedHTMLFormatted(formatted: SearchResult['hits']) {}
-
-	function getHighlightedHTML(
-		text: string,
-		positions: { start: number; length: number }[]
-	): string {
-		if (!text || !positions) {
-			return text;
-		}
-
-		// sort positions by start index
-		positions.sort((a, b) => a.start - b.start);
-
-		let highlighted = '';
-		let lastIndex = 0;
-		positions.forEach(({ start, length }) => {
-			highlighted += escapeHTML(text.substring(lastIndex, start));
-			highlighted += `<mark class="bg-yellow-300 dark:bg-yellow-600">${escapeHTML(
-				text.substring(start, start + length)
-			)}</mark>`;
-			lastIndex = start + length;
-		});
-		highlighted += escapeHTML(text.substring(lastIndex));
-		return highlighted;
-	}
-
-	function getSnippets(
-		text: string,
-		positions: { start: number; length: number }[],
-		contextLength = 50
-	) {
-		if (!text || !positions) {
+	function getHighlightedSnippets(text: string | undefined, snippetLength = 80): string[] {
+		if (!text || !text.includes('<em>')) {
 			return [];
 		}
 
-		// sort positions by start index
-		positions.sort((a, b) => a.start - b.start);
-
 		const snippets: string[] = [];
-		let lastEnd = -1;
+		const regex = /<em>.*?<\/em>/g;
+		let match;
+		let lastIndex = 0;
 
-		for (const { start, length } of positions) {
-			if (start < lastEnd) {
-				// Skip overlapping matches to avoid duplicate snippets
+		while ((match = regex.exec(text)) !== null) {
+			if (match.index < lastIndex) {
 				continue;
 			}
 
-			const snippetStart = Math.max(0, start - contextLength);
-			const snippetEnd = Math.min(text.length, start + length + contextLength);
-			lastEnd = snippetEnd;
+			const matchIndex = match.index;
+			const matchLength = match[0].length;
 
-			let snippet = text.substring(snippetStart, snippetEnd);
+			const start = Math.max(0, matchIndex - snippetLength);
+			const end = Math.min(text.length, matchIndex + matchLength + snippetLength);
 
-			// Adjust positions to be relative to the snippet
-			const relativeStart = start - snippetStart;
-			const relativePositions = [{ start: relativeStart, length }];
+			lastIndex = end;
 
-			let highlightedSnippet = getHighlightedHTML(snippet, relativePositions);
+			let snippet = text.substring(start, end);
 
-			if (snippetStart > 0) {
-				highlightedSnippet = '...' + highlightedSnippet;
+			// Then, balance them
+			const openCount = (snippet.match(/<em/g) || []).length;
+			const closeCount = (snippet.match(/<\/em>/g) || []).length;
+
+			if (openCount > closeCount) {
+				snippet += '</em>';
 			}
-			if (snippetEnd < text.length) {
-				highlightedSnippet += '...';
+
+			if (closeCount > openCount) {
+				snippet = '<em>' + snippet;
 			}
 
-			snippets.push(highlightedSnippet);
+			// Finally, add ellipsis
+			if (start > 0) {
+				snippet = '...' + snippet;
+			}
+			if (end < text.length) {
+				snippet += '...';
+			}
+
+			snippets.push(snippet);
 		}
 
 		return snippets;
@@ -136,51 +127,75 @@
 
 		<div class="grid gap-4">
 			{#each searchResult.hits as hit}
-				{@const _matchesPosition = hit._matchesPosition || {}}
+				{@const _formatted = hit._formatted || {}}
 				<a href="/dashboard/archived-emails/{hit.id}" class="block">
 					<Card>
 						<CardHeader>
 							<CardTitle>
-								{@html getHighlightedHTML(hit.subject, _matchesPosition.subject)}
+								{#if !isMounted}
+									<Skeleton class="h-6 w-3/4" />
+								{:else}
+									<div use:shadowRender={_formatted.subject || hit.subject}></div>
+								{/if}
 							</CardTitle>
-							<CardDescription>
-								From: {@html getHighlightedHTML(hit.from, _matchesPosition.from)} | To:
-								{@html getHighlightedHTML(hit.to.join(', '), _matchesPosition.to)}
-								|
-								{new Date(hit.timestamp).toLocaleString()}
+							<CardDescription class="flex items-center space-x-1">
+								<span>From:</span>
+								{#if !isMounted}
+									<span class="bg-accent h-4 w-40 animate-pulse rounded-md"></span>
+								{:else}
+									<span class="inline-block" use:shadowRender={_formatted.from || hit.from}></span>
+								{/if}
+								<span class="mx-2">|</span>
+								<span>To:</span>
+								{#if !isMounted}
+									<span class="bg-accent h-4 w-40 animate-pulse rounded-md"></span>
+								{:else}
+									<span
+										class="inline-block"
+										use:shadowRender={_formatted.to?.join(', ') || hit.to.join(', ')}
+									></span>
+								{/if}
+								<span class="mx-2">|</span>
+								{#if !isMounted}
+									<span class="bg-accent h-4 w-40 animate-pulse rounded-md"></span>
+								{:else}
+									<span class="inline-block">
+										{new Date(hit.timestamp).toLocaleString()}
+									</span>
+								{/if}
 							</CardDescription>
 						</CardHeader>
 						<CardContent class="space-y-2">
 							<!-- Body matches -->
-							{#if _matchesPosition.body}
-								{#each getSnippets(hit.body, _matchesPosition.body) as snippet}
+							{#if _formatted.body}
+								{#each getHighlightedSnippets(_formatted.body) as snippet}
 									<div class="space-y-2 rounded-md bg-slate-100 p-2 dark:bg-slate-800">
 										<p class="text-sm text-gray-500">In email body:</p>
-										<p class="font-mono text-sm">
-											{@html snippet}
-										</p>
+										{#if !isMounted}
+											<Skeleton class="my-2 h-5 w-full bg-gray-200" />
+										{:else}
+											<p class="font-mono text-sm" use:shadowRender={snippet}></p>
+										{/if}
 									</div>
 								{/each}
 							{/if}
 
 							<!-- Attachment matches -->
-							{#if _matchesPosition['attachments.content']}
-								{#each _matchesPosition['attachments.content'] as match}
-									{#if match.indices}
-										{@const attachmentIndex = match.indices[0]}
-										{@const attachment = hit.attachments[attachmentIndex]}
-										{#if attachment}
-											{#each getSnippets(attachment.content, [match]) as snippet}
-												<div class="space-y-2 rounded-md bg-slate-100 p-2 dark:bg-slate-800">
-													<p class="text-sm text-gray-500">
-														In attachment: {attachment.filename}
-													</p>
-													<p class="font-mono text-sm">
-														{@html snippet}
-													</p>
-												</div>
-											{/each}
-										{/if}
+							{#if _formatted.attachments}
+								{#each _formatted.attachments as attachment, i}
+									{#if attachment && attachment.content}
+										{#each getHighlightedSnippets(attachment.content) as snippet}
+											<div class="space-y-2 rounded-md bg-slate-100 p-2 dark:bg-slate-800">
+												<p class="text-sm text-gray-500">
+													In attachment: {attachment.filename}
+												</p>
+												{#if !isMounted}
+													<Skeleton class="my-2 h-5 w-full bg-gray-200" />
+												{:else}
+													<p class="font-mono text-sm" use:shadowRender={snippet}></p>
+												{/if}
+											</div>
+										{/each}
 									{/if}
 								{/each}
 							{/if}
