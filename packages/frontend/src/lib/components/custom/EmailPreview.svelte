@@ -34,7 +34,6 @@
 					}
 					const parsed = await new PostalMime().parse(buffer);
 					parsedEmail = parsed;
-					console.log(parsedEmail);
 				} catch (error) {
 					console.error('Failed to parse email:', error);
 				} finally {

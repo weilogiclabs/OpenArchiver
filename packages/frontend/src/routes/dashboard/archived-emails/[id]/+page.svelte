@@ -8,7 +8,6 @@
 
 	let { data }: { data: PageData } = $props();
 	const { email } = data;
-	console.log(email);
 	async function download(path: string, filename: string) {
 		if (!browser) return;
 
