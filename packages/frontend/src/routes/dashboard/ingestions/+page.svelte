@@ -16,7 +16,10 @@
 
 	let ingestionSources = $state(data.ingestionSources);
 	let isDialogOpen = $state(false);
+	let isDeleteDialogOpen = $state(false);
 	let selectedSource = $state<IngestionSource | null>(null);
+	let sourceToDelete = $state<IngestionSource | null>(null);
+	let isDeleting = $state(false);
 
 	const openCreateDialog = () => {
 		selectedSource = null;
@@ -28,12 +31,22 @@
 		isDialogOpen = true;
 	};
 
-	const handleDelete = async (id: string) => {
-		if (!confirm('Are you sure you want to delete this ingestion source?')) {
-			return;
+	const openDeleteDialog = (source: IngestionSource) => {
+		sourceToDelete = source;
+		isDeleteDialogOpen = true;
+	};
+
+	const confirmDelete = async () => {
+		if (!sourceToDelete) return;
+		isDeleting = true;
+		try {
+			await api(`/ingestion-sources/${sourceToDelete.id}`, { method: 'DELETE' });
+			ingestionSources = ingestionSources.filter((s) => s.id !== sourceToDelete!.id);
+			isDeleteDialogOpen = false;
+			sourceToDelete = null;
+		} finally {
+			isDeleting = false;
 		}
-		await api(`/ingestion-sources/${id}`, { method: 'DELETE' });
-		ingestionSources = ingestionSources.filter((s) => s.id !== id);
 	};
 
 	const handleSync = async (id: string) => {
@@ -170,7 +183,7 @@
 										<DropdownMenu.Item onclick={() => handleSync(source.id)}>Sync</DropdownMenu.Item
 										>
 										<DropdownMenu.Separator />
-										<DropdownMenu.Item class="text-red-600" onclick={() => handleDelete(source.id)}
+										<DropdownMenu.Item class="text-red-600" onclick={() => openDeleteDialog(source)}
 											>Delete</DropdownMenu.Item
 										>
 									</DropdownMenu.Content>
@@ -199,5 +212,25 @@
 			</Dialog.Description>
 		</Dialog.Header>
 		<IngestionSourceForm source={selectedSource} onSubmit={handleFormSubmit} />
+	</Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root bind:open={isDeleteDialogOpen}>
+	<Dialog.Content class="sm:max-w-lg">
+		<Dialog.Header>
+			<Dialog.Title>Are you sure you want to delete this ingestion?</Dialog.Title>
+			<Dialog.Description>
+				This will delete all archived emails, attachments, indexing, and files associated with this
+				ingestion. If you only want to stop syncing new emails, you can pause the ingestion instead.
+			</Dialog.Description>
+		</Dialog.Header>
+		<Dialog.Footer class="sm:justify-start">
+			<Button type="button" variant="destructive" onclick={confirmDelete} disabled={isDeleting}
+				>{#if isDeleting}Deleting...{:else}Confirm{/if}</Button
+			>
+			<Dialog.Close>
+				<Button type="button" variant="secondary">Cancel</Button>
+			</Dialog.Close>
+		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>

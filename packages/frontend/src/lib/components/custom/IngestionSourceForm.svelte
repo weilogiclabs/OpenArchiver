@@ -12,7 +12,7 @@
 		onSubmit
 	}: {
 		source?: IngestionSource | null;
-		onSubmit: (data: CreateIngestionSourceDto) => void;
+		onSubmit: (data: CreateIngestionSourceDto) => Promise<void>;
 	} = $props();
 
 	const providerOptions = [
@@ -38,9 +38,16 @@
 		providerOptions.find((p) => p.value === formData.provider)?.label ?? 'Select a provider'
 	);
 
-	const handleSubmit = (event: Event) => {
+	let isSubmitting = $state(false);
+
+	const handleSubmit = async (event: Event) => {
 		event.preventDefault();
-		onSubmit(formData);
+		isSubmitting = true;
+		try {
+			await onSubmit(formData);
+		} finally {
+			isSubmitting = false;
+		}
 	};
 </script>
 
@@ -118,6 +125,12 @@
 		</div>
 	{/if}
 	<Dialog.Footer>
-		<Button type="submit">Save changes</Button>
+		<Button type="submit" disabled={isSubmitting}>
+			{#if isSubmitting}
+				Submitting...
+			{:else}
+				Save changes
+			{/if}
+		</Button>
 	</Dialog.Footer>
 </form>
