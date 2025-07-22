@@ -101,6 +101,10 @@
 				class="col-span-3"
 			/>
 		</div>
+		<div class="grid grid-cols-4 items-center gap-4">
+			<Label for="tenantId" class="text-right">Tenant ID</Label>
+			<Input id="tenantId" bind:value={formData.providerConfig.tenantId} class="col-span-3" />
+		</div>
 	{:else if formData.provider === 'generic_imap'}
 		<div class="grid grid-cols-4 items-center gap-4">
 			<Label for="host" class="text-right">Host</Label>

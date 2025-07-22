@@ -56,6 +56,7 @@ export interface Microsoft365Credentials extends BaseIngestionCredentials {
     type: 'microsoft_365';
     clientId: string;
     clientSecret: string;
+    tenantId: string;
 }
 
 // Discriminated union for all possible credential types
