@@ -20,7 +20,7 @@ export const ingestionSources = pgTable('ingestion_sources', {
     id: uuid('id').primaryKey().defaultRandom(),
     name: text('name').notNull(),
     provider: ingestionProviderEnum('provider').notNull(),
-    credentials: jsonb('credentials'),
+    credentials: text('credentials'),
     status: ingestionStatusEnum('status').notNull().default('pending_auth'),
     lastSyncStartedAt: timestamp('last_sync_started_at', { withTimezone: true }),
     lastSyncFinishedAt: timestamp('last_sync_finished_at', { withTimezone: true }),
