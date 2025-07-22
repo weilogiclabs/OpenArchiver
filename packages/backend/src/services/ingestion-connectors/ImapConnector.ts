@@ -30,8 +30,10 @@ export class ImapConnector implements IEmailConnector {
             return false;
         }
     }
-
-    public async *fetchEmails(userEmail: string, syncState?: SyncState | null): AsyncGenerator<EmailObject> {
+    public returnImapUserEmail(): string {
+        return this.credentials.username;
+    }
+    public async *fetchEmails(userEmail: string, syncState?: SyncState | null): AsyncGenerator<EmailObject | null> {
         await this.client.connect();
         try {
             const mailbox = await this.client.mailboxOpen('INBOX');
@@ -42,17 +44,22 @@ export class ImapConnector implements IEmailConnector {
             // Determine the highest UID in the mailbox currently.
             // This ensures that even if no new emails are fetched, the sync state is updated to the latest UID.
             if (mailbox.exists > 0) {
-                const highestUidInMailbox = mailbox.uidNext - 1;
-                if (highestUidInMailbox > this.newMaxUid) {
-                    this.newMaxUid = highestUidInMailbox;
+                const lastMessage = await this.client.fetchOne(String(mailbox.exists), { uid: true });
+                if (lastMessage && lastMessage.uid > this.newMaxUid) {
+                    this.newMaxUid = lastMessage.uid;
                 }
             }
 
             // If lastUid exists, fetch all emails with a UID greater than it.
             // Otherwise, fetch all emails.
             const searchCriteria = lastUid ? { uid: `${lastUid + 1}:*` } : { all: true };
-
             for await (const msg of this.client.fetch(searchCriteria, { envelope: true, source: true, bodyStructure: true, uid: true })) {
+                // Defensive check: Ensure we do not process emails we should have already synced.
+                if (lastUid && msg.uid <= lastUid) {
+                    console.warn(`IMAP fetch returned UID ${msg.uid} which is not greater than last synced UID ${lastUid}. Skipping.`);
+                    continue;
+                }
+
                 if (msg.uid > this.newMaxUid) {
                     this.newMaxUid = msg.uid;
                 }

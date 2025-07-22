@@ -26,7 +26,11 @@ export type IngestionStatus =
     | 'importing'
     | 'auth_success';
 
-export interface GenericImapCredentials {
+export interface BaseIngestionCredentials {
+    type: IngestionProvider;
+}
+
+export interface GenericImapCredentials extends BaseIngestionCredentials {
     type: 'generic_imap';
     host: string;
     port: number;
@@ -35,7 +39,7 @@ export interface GenericImapCredentials {
     password?: string;
 }
 
-export interface GoogleWorkspaceCredentials {
+export interface GoogleWorkspaceCredentials extends BaseIngestionCredentials {
     type: 'google_workspace';
     /**
      * The full JSON content of the Google Service Account key.
@@ -48,7 +52,7 @@ export interface GoogleWorkspaceCredentials {
     impersonatedAdminEmail: string;
 }
 
-export interface Microsoft365Credentials {
+export interface Microsoft365Credentials extends BaseIngestionCredentials {
     type: 'microsoft_365';
     clientId: string;
     clientSecret: string;

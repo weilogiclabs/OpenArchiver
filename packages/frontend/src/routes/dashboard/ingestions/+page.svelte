@@ -9,6 +9,8 @@
 	import IngestionSourceForm from '$lib/components/custom/IngestionSourceForm.svelte';
 	import { api } from '$lib/api.client';
 	import type { IngestionSource, CreateIngestionSourceDto } from '@open-archiver/types';
+	import Badge from '$lib/components/ui/badge/badge.svelte';
+	import type { BadgeVariant } from '$lib/components/ui/badge/badge.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -88,6 +90,27 @@
 		}
 		isDialogOpen = false;
 	};
+
+	function getStatusClasses(status: IngestionSource['status']): string {
+		switch (status) {
+			case 'active':
+				return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+			case 'paused':
+				return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+			case 'error':
+				return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+			case 'syncing':
+				return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+			case 'importing':
+				return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
+			case 'pending_auth':
+				return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+			case 'auth_success':
+				return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+			default:
+				return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+		}
+	}
 </script>
 
 <div class="">
@@ -115,11 +138,11 @@
 							<Table.Cell>
 								<a href="/dashboard/archived-emails?ingestionSourceId={source.id}">{source.name}</a>
 							</Table.Cell>
-							<Table.Cell>{source.provider}</Table.Cell>
-							<Table.Cell class=" min-w-24">
-								<span>
-									{source.status}
-								</span>
+							<Table.Cell class="capitalize">{source.provider.split('_').join(' ')}</Table.Cell>
+							<Table.Cell class="min-w-24">
+								<Badge class="{getStatusClasses(source.status)} capitalize">
+									{source.status.split('_').join(' ')}
+								</Badge>
 							</Table.Cell>
 							<Table.Cell>
 								<Switch

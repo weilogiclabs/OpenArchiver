@@ -29,6 +29,11 @@
 		}
 	});
 
+	$effect(() => {
+		formData.providerConfig.type = formData.provider;
+		console.log(formData);
+	});
+
 	const triggerContent = $derived(
 		providerOptions.find((p) => p.value === formData.provider)?.label ?? 'Select a provider'
 	);

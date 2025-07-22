@@ -27,7 +27,9 @@ export const processMailboxProcessor = async (job: Job<IProcessMailboxJob, any, 
 
         // Pass the sync state for the entire source, the connector will handle per-user logic if necessary
         for await (const email of connector.fetchEmails(userEmail, source.syncState)) {
-            await ingestionService.processEmail(email, source, storageService);
+            if (email) {
+                await ingestionService.processEmail(email, source, storageService);
+            }
         }
 
         const newSyncState = connector.getUpdatedSyncState(userEmail);

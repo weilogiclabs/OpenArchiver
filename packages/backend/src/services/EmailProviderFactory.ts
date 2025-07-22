@@ -13,9 +13,10 @@ import { ImapConnector } from './ingestion-connectors/ImapConnector';
 // Define a common interface for all connectors
 export interface IEmailConnector {
     testConnection(): Promise<boolean>;
-    fetchEmails(userEmail: string, syncState?: SyncState | null): AsyncGenerator<EmailObject>;
+    fetchEmails(userEmail: string, syncState?: SyncState | null): AsyncGenerator<EmailObject | null>;
     getUpdatedSyncState(userEmail?: string): SyncState;
     listAllUsers?(): AsyncGenerator<any>;
+    returnImapUserEmail?(): string;
 }
 
 export class EmailProviderFactory {

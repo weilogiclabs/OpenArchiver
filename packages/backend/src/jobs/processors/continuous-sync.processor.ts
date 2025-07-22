@@ -4,6 +4,7 @@ import { IContinuousSyncJob } from '@open-archiver/types';
 import { EmailProviderFactory } from '../../services/EmailProviderFactory';
 import { flowProducer } from '../queues';
 import { logger } from '../../config/logger';
+import { ImapConnector } from '../../services/ingestion-connectors/ImapConnector';
 
 export default async (job: Job<IContinuousSyncJob>) => {
     const { ingestionSourceId } = job.data;
@@ -26,12 +27,16 @@ export default async (job: Job<IContinuousSyncJob>) => {
         const jobs = [];
         if (!connector.listAllUsers) {
             // This is for single-mailbox providers like Generic IMAP
+            let userEmail = 'Default';
+            if (connector instanceof ImapConnector) {
+                userEmail = connector.returnImapUserEmail();
+            }
             jobs.push({
                 name: 'process-mailbox',
                 queueName: 'ingestion',
                 data: {
                     ingestionSourceId: source.id,
-                    userEmail: 'default' // A placeholder, as it's not needed for IMAP
+                    userEmail: userEmail
                 }
             });
         } else {
@@ -43,7 +48,7 @@ export default async (job: Job<IContinuousSyncJob>) => {
                         queueName: 'ingestion',
                         data: {
                             ingestionSourceId: source.id,
-                            userEmail: user.primaryEmail,
+                            userEmail: user.primaryEmail
                         }
                     });
                 }

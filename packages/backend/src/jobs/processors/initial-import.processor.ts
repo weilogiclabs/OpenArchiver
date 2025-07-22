@@ -33,7 +33,7 @@ export default async (job: Job<IInitialImportJob>) => {
                         queueName: 'ingestion',
                         data: {
                             ingestionSourceId,
-                            userEmail: user.primaryEmail
+                            userEmail: user.primaryEmail,
                         }
                     });
                     userCount++;
@@ -62,6 +62,15 @@ export default async (job: Job<IInitialImportJob>) => {
         } else {
             // For other providers, we might trigger a simpler bulk import directly
             await new IngestionService().performBulkImport(job.data);
+            await flowProducer.add({
+                name: 'sync-cycle-finished',
+                queueName: 'ingestion',
+                data: {
+                    ingestionSourceId,
+                    userCount: 1,
+                    isInitialImport: true
+                }
+            });
         }
 
         logger.info({ ingestionSourceId }, 'Finished initial import master job');

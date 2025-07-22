@@ -154,19 +154,20 @@ export class IngestionService {
                 }
             } else {
                 // For single-mailbox providers, dispatch a single job
+                // console.log('source.credentials ', source.credentials);
                 await ingestionQueue.add('process-mailbox', {
                     ingestionSourceId: source.id,
-                    userEmail: 'default' // Placeholder, as it's not needed for IMAP
+                    userEmail: source.credentials.type === 'generic_imap' ? source.credentials.username : 'Default'
                 });
             }
 
 
-            await IngestionService.update(ingestionSourceId, {
-                status: 'active',
-                lastSyncFinishedAt: new Date(),
-                lastSyncStatusMessage: 'Successfully initiated bulk import for all mailboxes.'
-            });
-            console.log(`Bulk import job dispatch finished for source: ${source.name} (${source.id})`);
+            // await IngestionService.update(ingestionSourceId, {
+            //     status: 'active',
+            //     lastSyncFinishedAt: new Date(),
+            //     lastSyncStatusMessage: 'Successfully initiated bulk import for all mailboxes.'
+            // });
+            // console.log(`Bulk import job dispatch finished for source: ${source.name} (${source.id})`);
         } catch (error) {
             console.error(`Bulk import failed for source: ${source.name} (${source.id})`, error);
             await IngestionService.update(ingestionSourceId, {
