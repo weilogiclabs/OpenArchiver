@@ -3,7 +3,8 @@ import type {
     Microsoft365Credentials,
     EmailObject,
     EmailAddress,
-    SyncState
+    SyncState,
+    MailboxUser
 } from '@open-archiver/types';
 import type { IEmailConnector } from '../EmailProviderFactory';
 import { logger } from '../../config/logger';
@@ -96,14 +97,20 @@ export class MicrosoftConnector implements IEmailConnector {
      * This method handles pagination to retrieve the complete list of users.
      * @returns An async generator that yields each user object.
      */
-    public async *listAllUsers(): AsyncGenerator<User> {
+    public async *listAllUsers(): AsyncGenerator<MailboxUser> {
         let request = this.graphClient.api('/users').select('id,userPrincipalName,displayName');
 
         try {
             let response = await request.get();
             while (response) {
-                for (const user of response.value) {
-                    yield user;
+                for (const user of response.value as User[]) {
+                    if (user.id && user.userPrincipalName && user.displayName) {
+                        yield {
+                            id: user.id,
+                            primaryEmail: user.userPrincipalName,
+                            displayName: user.displayName
+                        };
+                    }
                 }
 
                 if (response['@odata.nextLink']) {
@@ -131,7 +138,7 @@ export class MicrosoftConnector implements IEmailConnector {
         const deltaToken = syncState?.microsoft?.[userEmail]?.deltaToken;
         let requestUrl = deltaToken
             ? deltaToken
-            : `/users/${userEmail}/messages/delta`;
+            : `/users/${userEmail}/mailFolders/AllItems/messages/delta`;
 
         try {
             while (requestUrl) {

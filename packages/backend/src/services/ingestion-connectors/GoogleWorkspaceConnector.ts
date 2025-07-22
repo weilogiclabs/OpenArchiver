@@ -4,7 +4,8 @@ import type {
     GoogleWorkspaceCredentials,
     EmailObject,
     EmailAddress,
-    SyncState
+    SyncState,
+    MailboxUser
 } from '@open-archiver/types';
 import type { IEmailConnector } from '../EmailProviderFactory';
 import { logger } from '../../config/logger';
@@ -88,7 +89,7 @@ export class GoogleWorkspaceConnector implements IEmailConnector {
      * This method handles pagination to retrieve the complete list of users.
      * @returns An async generator that yields each user object.
      */
-    public async *listAllUsers(): AsyncGenerator<admin_directory_v1.Schema$User> {
+    public async *listAllUsers(): AsyncGenerator<MailboxUser> {
         const authClient = this.getAuthClient(this.credentials.impersonatedAdminEmail, [
             'https://www.googleapis.com/auth/admin.directory.user.readonly'
         ]);
@@ -107,7 +108,13 @@ export class GoogleWorkspaceConnector implements IEmailConnector {
             const users = res.data.users;
             if (users) {
                 for (const user of users) {
-                    yield user;
+                    if (user.id && user.primaryEmail && user.name?.fullName) {
+                        yield {
+                            id: user.id,
+                            primaryEmail: user.primaryEmail,
+                            displayName: user.name.fullName
+                        };
+                    }
                 }
             }
             pageToken = res.data.nextPageToken ?? undefined;

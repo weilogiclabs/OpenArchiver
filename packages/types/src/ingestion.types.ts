@@ -108,3 +108,9 @@ export interface IProcessMailboxJob {
     ingestionSourceId: string;
     userEmail: string;
 }
+
+export type MailboxUser = {
+    id: string;
+    primaryEmail: string;
+    displayName: string;
+};

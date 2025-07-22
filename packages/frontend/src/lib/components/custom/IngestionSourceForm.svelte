@@ -90,19 +90,21 @@
 		</div>
 	{:else if formData.provider === 'microsoft_365'}
 		<div class="grid grid-cols-4 items-center gap-4">
-			<Label for="clientId" class="text-right">Client ID</Label>
+			<Label for="clientId" class="text-right">Application (Client) ID</Label>
 			<Input id="clientId" bind:value={formData.providerConfig.clientId} class="col-span-3" />
 		</div>
 		<div class="grid grid-cols-4 items-center gap-4">
-			<Label for="clientSecret" class="text-right">Client Secret</Label>
+			<Label for="clientSecret" class="text-right">Client Secret Value</Label>
 			<Input
 				id="clientSecret"
+				type="password"
+				placeholder="Enter the secret Value, not the Secret ID"
 				bind:value={formData.providerConfig.clientSecret}
 				class="col-span-3"
 			/>
 		</div>
 		<div class="grid grid-cols-4 items-center gap-4">
-			<Label for="tenantId" class="text-right">Tenant ID</Label>
+			<Label for="tenantId" class="text-right">Directory (Tenant) ID</Label>
 			<Input id="tenantId" bind:value={formData.providerConfig.tenantId} class="col-span-3" />
 		</div>
 	{:else if formData.provider === 'generic_imap'}

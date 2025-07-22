@@ -5,6 +5,7 @@ import { EmailProviderFactory } from '../../services/EmailProviderFactory';
 import { GoogleWorkspaceConnector } from '../../services/ingestion-connectors/GoogleWorkspaceConnector';
 import { flowProducer, ingestionQueue } from '../queues';
 import { logger } from '../../config/logger';
+import { MicrosoftConnector } from '../../services/ingestion-connectors/MicrosoftConnector';
 
 export default async (job: Job<IInitialImportJob>) => {
     const { ingestionSourceId } = job.data;
@@ -23,7 +24,7 @@ export default async (job: Job<IInitialImportJob>) => {
 
         const connector = EmailProviderFactory.createConnector(source);
 
-        if (connector instanceof GoogleWorkspaceConnector) {
+        if (connector instanceof GoogleWorkspaceConnector || connector instanceof MicrosoftConnector) {
             const jobs = [];
             let userCount = 0;
             for await (const user of connector.listAllUsers()) {

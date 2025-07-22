@@ -4,7 +4,8 @@ import type {
     Microsoft365Credentials,
     GenericImapCredentials,
     EmailObject,
-    SyncState
+    SyncState,
+    MailboxUser
 } from '@open-archiver/types';
 import { GoogleWorkspaceConnector } from './ingestion-connectors/GoogleWorkspaceConnector';
 import { MicrosoftConnector } from './ingestion-connectors/MicrosoftConnector';
@@ -15,7 +16,7 @@ export interface IEmailConnector {
     testConnection(): Promise<boolean>;
     fetchEmails(userEmail: string, syncState?: SyncState | null): AsyncGenerator<EmailObject | null>;
     getUpdatedSyncState(userEmail?: string): SyncState;
-    listAllUsers?(): AsyncGenerator<any>;
+    listAllUsers?(): AsyncGenerator<MailboxUser>;
     returnImapUserEmail?(): string;
 }
 
