@@ -33,6 +33,11 @@ export class SearchService {
         return index.search(query, options);
     }
 
+    public async deleteDocumentsByFilter(indexName: string, filter: string | string[]) {
+        const index = await this.getIndex(indexName);
+        return index.deleteDocuments({ filter });
+    }
+
     public async searchEmails(dto: SearchQuery): Promise<SearchResult> {
         const { query, filters, page = 1, limit = 10, matchingStrategy = 'last' } = dto;
         const index = await this.getIndex<EmailDocument>('emails');

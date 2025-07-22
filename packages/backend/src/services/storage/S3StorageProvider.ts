@@ -5,6 +5,8 @@ import {
     DeleteObjectCommand,
     HeadObjectCommand,
     NotFound,
+    ListObjectsV2Command,
+    DeleteObjectsCommand,
 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { Readable } from 'stream';
@@ -60,11 +62,28 @@ export class S3StorageProvider implements IStorageProvider {
     }
 
     async delete(path: string): Promise<void> {
-        const command = new DeleteObjectCommand({
+        // List all objects with the given prefix
+        const listCommand = new ListObjectsV2Command({
             Bucket: this.bucket,
-            Key: path,
+            Prefix: path,
         });
-        await this.client.send(command);
+        const listedObjects = await this.client.send(listCommand);
+
+        if (!listedObjects.Contents || listedObjects.Contents.length === 0) {
+            return;
+        }
+
+        // Create a list of objects to delete
+        const deleteParams = {
+            Bucket: this.bucket,
+            Delete: {
+                Objects: listedObjects.Contents.map(({ Key }) => ({ Key })),
+            },
+        };
+
+        // Delete the objects
+        const deleteCommand = new DeleteObjectsCommand(deleteParams);
+        await this.client.send(deleteCommand);
     }
 
     async exists(path: string): Promise<boolean> {

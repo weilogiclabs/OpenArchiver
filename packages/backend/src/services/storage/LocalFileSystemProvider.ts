@@ -37,8 +37,9 @@ export class LocalFileSystemProvider implements IStorageProvider {
     async delete(filePath: string): Promise<void> {
         const fullPath = path.join(this.rootPath, filePath);
         try {
-            await fs.unlink(fullPath);
+            await fs.rm(fullPath, { recursive: true, force: true });
         } catch (error: any) {
+            // Even with force: true, other errors might occur (e.g., permissions)
             if (error.code !== 'ENOENT') {
                 throw error;
             }

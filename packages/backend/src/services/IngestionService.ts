@@ -106,13 +106,30 @@ export class IngestionService {
     }
 
     public static async delete(id: string): Promise<IngestionSource> {
+        const source = await this.findById(id);
+        if (!source) {
+            throw new Error('Ingestion source not found');
+        }
+
+        // Delete all emails and attachments from storage
+        const storage = new StorageService();
+        const emailPath = `open-archiver/${source.name.replaceAll(' ', '-')}-${source.id}/`;
+        await storage.delete(emailPath);
+
+
+        // Delete all emails from the database
+        // NOTE: This is done by database CASADE, change when CASADE relation no longer exists.
+        // await db.delete(archivedEmails).where(eq(archivedEmails.ingestionSourceId, id));
+
+        // Delete all documents from Meilisearch
+        const searchService = new SearchService();
+        await searchService.deleteDocumentsByFilter('emails', `ingestionSourceId = ${id}`);
+
         const [deletedSource] = await db
             .delete(ingestionSources)
             .where(eq(ingestionSources.id, id))
             .returning();
-        if (!deletedSource) {
-            throw new Error('Ingestion source not found');
-        }
+
         return this.decryptSource(deletedSource);
     }
 
@@ -188,7 +205,7 @@ export class IngestionService {
             console.log('processing email, ', email.id, email.subject);
             const emlBuffer = email.eml ?? Buffer.from(email.body, 'utf-8');
             const emailHash = createHash('sha256').update(emlBuffer).digest('hex');
-            const emailPath = `email-archive/${source.name.replaceAll(' ', '-')}-${source.id}/emails/${email.id}.eml`;
+            const emailPath = `open-archiver/${source.name.replaceAll(' ', '-')}-${source.id}/emails/${email.id}.eml`;
             await storage.put(emailPath, emlBuffer);
 
             const [archivedEmail] = await db
@@ -218,7 +235,7 @@ export class IngestionService {
                 for (const attachment of email.attachments) {
                     const attachmentBuffer = attachment.content;
                     const attachmentHash = createHash('sha256').update(attachmentBuffer).digest('hex');
-                    const attachmentPath = `email-archive/${source.name.replaceAll(' ', '-')}-${source.id}/attachments/${attachment.filename}`;
+                    const attachmentPath = `open-archiver/${source.name.replaceAll(' ', '-')}-${source.id}/attachments/${attachment.filename}`;
                     await storage.put(attachmentPath, attachmentBuffer);
 
                     const [newAttachment] = await db
