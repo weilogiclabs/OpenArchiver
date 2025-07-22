@@ -136,9 +136,16 @@ export class MicrosoftConnector implements IEmailConnector {
         syncState?: SyncState | null
     ): AsyncGenerator<EmailObject> {
         const deltaToken = syncState?.microsoft?.[userEmail]?.deltaToken;
-        let requestUrl = deltaToken
-            ? deltaToken
-            : `/users/${userEmail}/mailFolders/AllItems/messages/delta`;
+
+        if (!deltaToken) {
+            // Initial sync: fetch all messages and set the initial delta token.
+            yield* this.fetchAllMessagesAndSetDeltaToken(userEmail);
+            return;
+        }
+
+        // Continuous sync: use the existing delta token to fetch changes.
+        this.newDeltaToken = deltaToken; // Preserve the token in case there are no new messages.
+        let requestUrl: string | undefined = deltaToken;
 
         try {
             while (requestUrl) {
@@ -162,6 +169,30 @@ export class MicrosoftConnector implements IEmailConnector {
         } catch (error) {
             logger.error({ err: error, userEmail }, 'Failed to fetch emails from Microsoft 365');
             throw error;
+        }
+    }
+
+    private async *fetchAllMessagesAndSetDeltaToken(userEmail: string): AsyncGenerator<EmailObject> {
+        let requestUrl: string | undefined = `/users/${userEmail}/mailFolders/AllItems/messages/delta`;
+        this.newDeltaToken = undefined; // Ensure it starts clean for initial sync
+
+        while (requestUrl) {
+            const response = await this.graphClient.api(requestUrl).get();
+
+            for (const message of response.value) {
+                if (message.id && !(message as any)['@removed']) {
+                    const rawEmail = await this.getRawEmail(userEmail, message.id);
+                    if (rawEmail) {
+                        yield await this.parseEmail(rawEmail, message.id, userEmail);
+                    }
+                }
+            }
+
+            if (response['@odata.deltaLink']) {
+                this.newDeltaToken = response['@odata.deltaLink'];
+            }
+
+            requestUrl = response['@odata.nextLink'];
         }
     }
 

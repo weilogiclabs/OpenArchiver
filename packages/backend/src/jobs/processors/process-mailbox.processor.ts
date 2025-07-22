@@ -5,10 +5,9 @@ import { logger } from '../../config/logger';
 import { EmailProviderFactory } from '../../services/EmailProviderFactory';
 import { StorageService } from '../../services/StorageService';
 
-import { IngestionSource, SyncState } from '@open-archiver/types';
 import { db } from '../../database';
 import { ingestionSources } from '../../database/schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 export const processMailboxProcessor = async (job: Job<IProcessMailboxJob, any, string>) => {
     const { ingestionSourceId, userEmail } = job.data;
@@ -33,35 +32,39 @@ export const processMailboxProcessor = async (job: Job<IProcessMailboxJob, any, 
         }
 
         const newSyncState = connector.getUpdatedSyncState(userEmail);
-        // console.log('new sync state: ', newSyncState);
-        // Atomically update the syncState JSONB field
-        if (Object.keys(newSyncState).length > 0) {
-            const currentSource = (await db
-                .select({ syncState: ingestionSources.syncState })
-                .from(ingestionSources)
-                .where(eq(ingestionSources.id, ingestionSourceId))) as IngestionSource[];
 
-            const currentSyncState = currentSource[0]?.syncState || {};
+        // Atomically update the syncState JSONB field to prevent race conditions
+        const provider = Object.keys(newSyncState)[0] as keyof typeof newSyncState | undefined;
 
-            const mergedSyncState: SyncState = { ...currentSyncState };
+        if (provider && newSyncState[provider]) {
+            let path: (string | number)[];
+            let userState: any;
 
-            if (newSyncState.google) {
-                mergedSyncState.google = { ...mergedSyncState.google, ...newSyncState.google };
-            }
-            if (newSyncState.microsoft) {
-                mergedSyncState.microsoft = { ...mergedSyncState.microsoft, ...newSyncState.microsoft };
-            }
-            if (newSyncState.imap) {
-                mergedSyncState.imap = newSyncState.imap;
+            if (provider === 'imap') {
+                path = ['imap'];
+                userState = newSyncState.imap;
+            } else {
+                // Handles 'google' and 'microsoft'
+                path = [provider, userEmail];
+                userState = (newSyncState[provider] as any)?.[userEmail];
             }
 
-            await db
-                .update(ingestionSources)
-                .set({
-                    syncState: mergedSyncState,
-                    updatedAt: new Date()
-                })
-                .where(eq(ingestionSources.id, ingestionSourceId));
+            if (userState) {
+                await db
+                    .update(ingestionSources)
+                    .set({
+                        syncState: sql`jsonb_set(
+                            COALESCE(${ingestionSources.syncState}, '{}'::jsonb),
+                            '{${sql.raw(path.join(','))}}',
+                            ${JSON.stringify(userState)}::jsonb,
+                            true
+                        )`,
+                        updatedAt: new Date()
+                    })
+                    .where(eq(ingestionSources.id, ingestionSourceId));
+            } else {
+                logger.warn({ ingestionSourceId, userEmail, provider }, `No sync state found for user under provider`);
+            }
         }
         logger.info({ ingestionSourceId, userEmail }, `Finished processing mailbox for user`);
     } catch (error) {

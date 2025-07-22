@@ -107,9 +107,11 @@
 					<Table.Row>
 						<Table.Cell>{new Date(email.sentAt).toLocaleString()}</Table.Cell>
 						<Table.Cell>
-							<a href={`/dashboard/archived-emails/${email.id}`}>
-								{email.subject}
-							</a>
+							<div class="max-w-100 truncate">
+								<a href={`/dashboard/archived-emails/${email.id}`}>
+									{email.subject}
+								</a>
+							</div>
 						</Table.Cell>
 						<Table.Cell>{email.senderEmail}</Table.Cell>
 						<Table.Cell>{email.hasAttachments ? 'Yes' : 'No'}</Table.Cell>
