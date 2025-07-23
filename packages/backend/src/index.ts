@@ -11,6 +11,7 @@ import { createIngestionRouter } from './api/routes/ingestion.routes';
 import { createArchivedEmailRouter } from './api/routes/archived-email.routes';
 import { createStorageRouter } from './api/routes/storage.routes';
 import { createSearchRouter } from './api/routes/search.routes';
+import { createDashboardRouter } from './api/routes/dashboard.routes';
 import testRouter from './api/routes/test.routes';
 import { AuthService } from './services/AuthService';
 import { AdminUserService } from './services/UserService';
@@ -58,11 +59,13 @@ const ingestionRouter = createIngestionRouter(ingestionController, authService);
 const archivedEmailRouter = createArchivedEmailRouter(archivedEmailController, authService);
 const storageRouter = createStorageRouter(storageController, authService);
 const searchRouter = createSearchRouter(searchController, authService);
+const dashboardRouter = createDashboardRouter(authService);
 app.use('/v1/auth', authRouter);
 app.use('/v1/ingestion-sources', ingestionRouter);
 app.use('/v1/archived-emails', archivedEmailRouter);
 app.use('/v1/storage', storageRouter);
 app.use('/v1/search', searchRouter);
+app.use('/v1/dashboard', dashboardRouter);
 app.use('/v1/test', testRouter);
 
 // Example of a protected route

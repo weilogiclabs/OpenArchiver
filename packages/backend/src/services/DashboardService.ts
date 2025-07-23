@@ -1,0 +1,78 @@
+import { and, count, eq, gte, sql } from 'drizzle-orm';
+
+import { archivedEmails, ingestionSources } from '../database/schema';
+import { DatabaseService } from './DatabaseService';
+
+class DashboardService {
+    #db;
+
+    constructor(databaseService: DatabaseService) {
+        this.#db = databaseService.db;
+    }
+
+    public async getStats() {
+        const totalEmailsArchived = await this.#db.select({ count: count() }).from(archivedEmails);
+        const totalStorageUsed = await this.#db
+            .select({ sum: sql<number>`sum(${archivedEmails.sizeBytes})` })
+            .from(archivedEmails);
+
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const failedIngestionsLast7Days = await this.#db
+            .select({ count: count() })
+            .from(ingestionSources)
+            .where(
+                and(
+                    eq(ingestionSources.status, 'error'),
+                    gte(ingestionSources.updatedAt, sevenDaysAgo)
+                )
+            );
+
+        return {
+            totalEmailsArchived: totalEmailsArchived[0].count,
+            totalStorageUsed: totalStorageUsed[0].sum || 0,
+            failedIngestionsLast7Days: failedIngestionsLast7Days[0].count
+        };
+    }
+
+    public async getIngestionHistory() {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        const history = await this.#db
+            .select({
+                date: sql<string>`date_trunc('day', ${archivedEmails.archivedAt})`,
+                count: count()
+            })
+            .from(archivedEmails)
+            .where(gte(archivedEmails.archivedAt, thirtyDaysAgo))
+            .groupBy(sql`date_trunc('day', ${archivedEmails.archivedAt})`)
+            .orderBy(sql`date_trunc('day', ${archivedEmails.archivedAt})`);
+
+        return { history };
+    }
+
+    public async getIngestionSources() {
+        const sources = await this.#db
+            .select({
+                id: ingestionSources.id,
+                name: ingestionSources.name,
+                provider: ingestionSources.provider,
+                status: ingestionSources.status,
+                storageUsed: sql<number>`sum(${archivedEmails.sizeBytes})`.mapWith(Number)
+            })
+            .from(ingestionSources)
+            .leftJoin(archivedEmails, eq(ingestionSources.id, archivedEmails.ingestionSourceId))
+            .groupBy(ingestionSources.id);
+
+        return sources;
+    }
+
+    public async getRecentSyncs() {
+        // This is a placeholder as we don't have a sync job table yet.
+        return Promise.resolve([]);
+    }
+}
+
+export const dashboardService = new DashboardService(new DatabaseService());
