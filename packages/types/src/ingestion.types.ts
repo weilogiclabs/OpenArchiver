@@ -6,7 +6,7 @@ export type SyncState = {
     };
     microsoft?: {
         [userEmail: string]: {
-            deltaToken: string;
+            deltaTokens: { [folderId: string]: string; };
         };
     };
     imap?: {
