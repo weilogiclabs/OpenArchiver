@@ -20,9 +20,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 
 	export let data: PageData;
-
 	const { stats, ingestionHistory, ingestionSources, recentSyncs } = data;
-
 	const chartConfig = {
 		storageUsed: {
 			label: 'Storage Used'
