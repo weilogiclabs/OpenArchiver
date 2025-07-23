@@ -2,10 +2,8 @@ import { Job } from 'bullmq';
 import { IngestionService } from '../../services/IngestionService';
 import { IInitialImportJob } from '@open-archiver/types';
 import { EmailProviderFactory } from '../../services/EmailProviderFactory';
-import { GoogleWorkspaceConnector } from '../../services/ingestion-connectors/GoogleWorkspaceConnector';
-import { flowProducer, ingestionQueue } from '../queues';
+import { flowProducer } from '../queues';
 import { logger } from '../../config/logger';
-import { MicrosoftConnector } from '../../services/ingestion-connectors/MicrosoftConnector';
 
 export default async (job: Job<IInitialImportJob>) => {
     const { ingestionSourceId } = job.data;
@@ -24,55 +22,55 @@ export default async (job: Job<IInitialImportJob>) => {
 
         const connector = EmailProviderFactory.createConnector(source);
 
-        if (connector instanceof GoogleWorkspaceConnector || connector instanceof MicrosoftConnector) {
-            const jobs = [];
-            let userCount = 0;
-            for await (const user of connector.listAllUsers()) {
-                if (user.primaryEmail) {
-                    jobs.push({
-                        name: 'process-mailbox',
-                        queueName: 'ingestion',
-                        data: {
-                            ingestionSourceId,
-                            userEmail: user.primaryEmail,
-                        }
-                    });
-                    userCount++;
-                }
-            }
-
-            if (jobs.length > 0) {
-                await flowProducer.add({
-                    name: 'sync-cycle-finished',
+        // if (connector instanceof GoogleWorkspaceConnector || connector instanceof MicrosoftConnector) {
+        const jobs = [];
+        let userCount = 0;
+        for await (const user of connector.listAllUsers()) {
+            if (user.primaryEmail) {
+                jobs.push({
+                    name: 'process-mailbox',
                     queueName: 'ingestion',
                     data: {
                         ingestionSourceId,
-                        userCount,
-                        isInitialImport: true
-                    },
-                    children: jobs
+                        userEmail: user.primaryEmail,
+                    }
                 });
-            } else {
-                // If there are no users, we can consider the import finished and set to active
-                await IngestionService.update(ingestionSourceId, {
-                    status: 'active',
-                    lastSyncFinishedAt: new Date(),
-                    lastSyncStatusMessage: 'Initial import complete. No users found.'
-                });
+                userCount++;
             }
-        } else {
-            // For other providers, we might trigger a simpler bulk import directly
-            await new IngestionService().performBulkImport(job.data);
+        }
+
+        if (jobs.length > 0) {
             await flowProducer.add({
                 name: 'sync-cycle-finished',
                 queueName: 'ingestion',
                 data: {
                     ingestionSourceId,
-                    userCount: 1,
+                    userCount,
                     isInitialImport: true
-                }
+                },
+                children: jobs
+            });
+        } else {
+            // If there are no users, we can consider the import finished and set to active
+            await IngestionService.update(ingestionSourceId, {
+                status: 'active',
+                lastSyncFinishedAt: new Date(),
+                lastSyncStatusMessage: 'Initial import complete. No users found.'
             });
         }
+        // } else {
+        //     // For other providers, we might trigger a simpler bulk import directly
+        //     await new IngestionService().performBulkImport(job.data);
+        //     await flowProducer.add({
+        //         name: 'sync-cycle-finished',
+        //         queueName: 'ingestion',
+        //         data: {
+        //             ingestionSourceId,
+        //             userCount: 1,
+        //             isInitialImport: true
+        //         }
+        //     });
+        // }
 
         logger.info({ ingestionSourceId }, 'Finished initial import master job');
     } catch (error) {

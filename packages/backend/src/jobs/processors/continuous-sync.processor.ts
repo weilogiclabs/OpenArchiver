@@ -4,7 +4,6 @@ import { IContinuousSyncJob } from '@open-archiver/types';
 import { EmailProviderFactory } from '../../services/EmailProviderFactory';
 import { flowProducer } from '../queues';
 import { logger } from '../../config/logger';
-import { ImapConnector } from '../../services/ingestion-connectors/ImapConnector';
 
 export default async (job: Job<IContinuousSyncJob>) => {
     const { ingestionSourceId } = job.data;
@@ -25,35 +24,35 @@ export default async (job: Job<IContinuousSyncJob>) => {
 
     try {
         const jobs = [];
-        if (!connector.listAllUsers) {
-            // This is for single-mailbox providers like Generic IMAP
-            let userEmail = 'Default';
-            if (connector instanceof ImapConnector) {
-                userEmail = connector.returnImapUserEmail();
-            }
-            jobs.push({
-                name: 'process-mailbox',
-                queueName: 'ingestion',
-                data: {
-                    ingestionSourceId: source.id,
-                    userEmail: userEmail
-                }
-            });
-        } else {
-            // For multi-mailbox providers like Google Workspace and M365
-            for await (const user of connector.listAllUsers()) {
-                if (user.primaryEmail) {
-                    jobs.push({
-                        name: 'process-mailbox',
-                        queueName: 'ingestion',
-                        data: {
-                            ingestionSourceId: source.id,
-                            userEmail: user.primaryEmail
-                        }
-                    });
-                }
+        // if (!connector.listAllUsers) {
+        //     // This is for single-mailbox providers like Generic IMAP
+        //     let userEmail = 'Default';
+        //     if (connector instanceof ImapConnector) {
+        //         userEmail = connector.returnImapUserEmail();
+        //     }
+        //     jobs.push({
+        //         name: 'process-mailbox',
+        //         queueName: 'ingestion',
+        //         data: {
+        //             ingestionSourceId: source.id,
+        //             userEmail: userEmail
+        //         }
+        //     });
+        // } else {
+        // For multi-mailbox providers like Google Workspace and M365
+        for await (const user of connector.listAllUsers()) {
+            if (user.primaryEmail) {
+                jobs.push({
+                    name: 'process-mailbox',
+                    queueName: 'ingestion',
+                    data: {
+                        ingestionSourceId: source.id,
+                        userEmail: user.primaryEmail
+                    }
+                });
             }
         }
+        // }
 
         if (jobs.length > 0) {
             await flowProducer.add({

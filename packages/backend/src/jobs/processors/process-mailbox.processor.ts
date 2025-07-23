@@ -1,15 +1,11 @@
 import { Job } from 'bullmq';
-import { IProcessMailboxJob } from '@open-archiver/types';
+import { IProcessMailboxJob, SyncState } from '@open-archiver/types';
 import { IngestionService } from '../../services/IngestionService';
 import { logger } from '../../config/logger';
 import { EmailProviderFactory } from '../../services/EmailProviderFactory';
 import { StorageService } from '../../services/StorageService';
 
-import { db } from '../../database';
-import { ingestionSources } from '../../database/schema';
-import { eq, sql } from 'drizzle-orm';
-
-export const processMailboxProcessor = async (job: Job<IProcessMailboxJob, any, string>) => {
+export const processMailboxProcessor = async (job: Job<IProcessMailboxJob, SyncState, string>) => {
     const { ingestionSourceId, userEmail } = job.data;
 
     logger.info({ ingestionSourceId, userEmail }, `Processing mailbox for user`);
@@ -32,41 +28,12 @@ export const processMailboxProcessor = async (job: Job<IProcessMailboxJob, any, 
         }
 
         const newSyncState = connector.getUpdatedSyncState(userEmail);
+        console.log('newSyncState, ', newSyncState);
 
-        // Atomically update the syncState JSONB field to prevent race conditions
-        const provider = Object.keys(newSyncState)[0] as keyof typeof newSyncState | undefined;
-
-        if (provider && newSyncState[provider]) {
-            let path: (string | number)[];
-            let userState: any;
-
-            if (provider === 'imap') {
-                path = ['imap'];
-                userState = newSyncState.imap;
-            } else {
-                // Handles 'google' and 'microsoft'
-                path = [provider, userEmail];
-                userState = (newSyncState[provider] as any)?.[userEmail];
-            }
-
-            if (userState) {
-                await db
-                    .update(ingestionSources)
-                    .set({
-                        syncState: sql`jsonb_set(
-                            COALESCE(${ingestionSources.syncState}, '{}'::jsonb),
-                            '{${sql.raw(path.join(','))}}',
-                            ${JSON.stringify(userState)}::jsonb,
-                            true
-                        )`,
-                        updatedAt: new Date()
-                    })
-                    .where(eq(ingestionSources.id, ingestionSourceId));
-            } else {
-                logger.warn({ ingestionSourceId, userEmail, provider }, `No sync state found for user under provider`);
-            }
-        }
         logger.info({ ingestionSourceId, userEmail }, `Finished processing mailbox for user`);
+
+        // Return the new sync state to be aggregated by the parent flow
+        return newSyncState;
     } catch (error) {
         logger.error({ err: error, ingestionSourceId, userEmail }, 'Error processing mailbox');
         throw error;
