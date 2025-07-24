@@ -1,5 +1,4 @@
 import { authStore } from '$lib/stores/auth.store';
-import type { User } from '@open-archiver/types';
 import { get } from 'svelte/store';
 
 const BASE_URL = '/api/v1'; // Using a relative URL for proxying

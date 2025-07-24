@@ -2,6 +2,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 
 const BASE_URL = '/api/v1'; // Using a relative URL for proxying
 
+
 /**
  * A custom fetch wrapper for the server-side to automatically handle authentication headers.
  * @param url The URL to fetch, relative to the API base.
