@@ -36,7 +36,7 @@
 
 {#if email}
 	<div class="grid grid-cols-3 gap-6">
-		<div class="col-span-2">
+		<div class="col-span-3 md:col-span-2">
 			<Card.Root>
 				<Card.Header>
 					<Card.Title>{email.subject || 'No Subject'}</Card.Title>
@@ -79,7 +79,7 @@
 				</Card.Content>
 			</Card.Root>
 		</div>
-		<div class="col-span-1">
+		<div class="col-span-3 md:col-span-1">
 			<Card.Root>
 				<Card.Header>
 					<Card.Title>Actions</Card.Title>

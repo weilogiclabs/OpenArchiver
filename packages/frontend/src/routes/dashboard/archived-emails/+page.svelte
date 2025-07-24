@@ -95,6 +95,7 @@
 		<Table.Header>
 			<Table.Row>
 				<Table.Head>Date</Table.Head>
+				<Table.Head>Inbox</Table.Head>
 				<Table.Head>Subject</Table.Head>
 				<Table.Head>Sender</Table.Head>
 				<Table.Head>Attachments</Table.Head>
@@ -106,6 +107,7 @@
 				{#each archivedEmails.items as email (email.id)}
 					<Table.Row>
 						<Table.Cell>{new Date(email.sentAt).toLocaleString()}</Table.Cell>
+						<Table.Cell>{email.userEmail}</Table.Cell>
 						<Table.Cell>
 							<div class="max-w-100 truncate">
 								<a href={`/dashboard/archived-emails/${email.id}`}>

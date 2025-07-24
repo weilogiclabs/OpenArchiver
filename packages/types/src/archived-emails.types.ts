@@ -23,6 +23,7 @@ export interface Attachment {
 export interface ArchivedEmail {
     id: string;
     ingestionSourceId: string;
+    userEmail: string;
     messageIdHeader: string | null;
     sentAt: Date;
     subject: string | null;

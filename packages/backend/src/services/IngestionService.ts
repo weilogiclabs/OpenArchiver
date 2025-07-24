@@ -199,7 +199,8 @@ export class IngestionService {
     public async processEmail(
         email: EmailObject,
         source: IngestionSource,
-        storage: StorageService
+        storage: StorageService,
+        userEmail: string
     ): Promise<void> {
         try {
             console.log('processing email, ', email.id, email.subject);
@@ -212,6 +213,7 @@ export class IngestionService {
                 .insert(archivedEmails)
                 .values({
                     ingestionSourceId: source.id,
+                    userEmail,
                     messageIdHeader:
                         (email.headers['message-id'] as string) ??
                         `generated-${emailHash}-${source.id}-${email.id}`,

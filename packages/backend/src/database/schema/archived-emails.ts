@@ -7,6 +7,7 @@ export const archivedEmails = pgTable('archived_emails', {
     ingestionSourceId: uuid('ingestion_source_id')
         .notNull()
         .references(() => ingestionSources.id, { onDelete: 'cascade' }),
+    userEmail: text('user_email').notNull(),
     messageIdHeader: text('message_id_header'),
     sentAt: timestamp('sent_at', { withTimezone: true }).notNull(),
     subject: text('subject'),

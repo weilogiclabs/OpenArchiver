@@ -15,6 +15,7 @@
 	},
 	"dependencies": {
 		"@open-archiver/types": "workspace:*",
+		"d3-shape": "^3.2.0",
 		"jose": "^6.0.1",
 		"lucide-svelte": "^0.525.0",
 		"postal-mime": "^2.4.4",
@@ -27,6 +28,7 @@
 		"@sveltejs/kit": "^2.16.0",
 		"@sveltejs/vite-plugin-svelte": "^5.0.0",
 		"@tailwindcss/vite": "^4.0.0",
+		"@types/d3-shape": "^3.1.7",
 		"bits-ui": "^2.8.10",
 		"clsx": "^2.1.1",
 		"dotenv": "^17.2.0",

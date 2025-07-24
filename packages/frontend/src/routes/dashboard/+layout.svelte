@@ -20,7 +20,7 @@
 
 <header class="bg-background sticky top-0 z-40 border-b">
 	<div class="container mx-auto flex h-16 flex-row items-center justify-between">
-		<a href="/dashboard" class="text-primary flex flex-row items-center gap-2 font-bold">
+		<a href="/dashboard" class="flex flex-row items-center gap-2 font-bold">
 			<img src="/logos/logo-sq.svg" alt="OpenArchiver Logo" class="h-8 w-8" />
 			<span>Open Archiver</span>
 		</a>
