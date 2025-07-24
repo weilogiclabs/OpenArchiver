@@ -1,226 +1,154 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import {
-		Card,
-		CardContent,
-		CardDescription,
-		CardHeader,
-		CardTitle
-	} from '$lib/components/ui/card';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Chart from '$lib/components/ui/chart/index.js';
-	import { BarChart, PieChart, LineChart } from 'layerchart';
-	import {
-		Table,
-		TableBody,
-		TableCell,
-		TableHead,
-		TableHeader,
-		TableRow
-	} from '$lib/components/ui/table';
-	import { Badge } from '$lib/components/ui/badge';
+	import { BarChart } from 'layerchart';
+	import { formatBytes } from '$lib/utils';
 
-	export let data: PageData;
-	const { stats, ingestionHistory, ingestionSources, recentSyncs } = data;
+	let { data }: { data: PageData } = $props();
+
 	const chartConfig = {
-		storageUsed: {
-			label: 'Storage Used'
-		},
 		count: {
-			label: 'Emails'
+			label: 'Emails Ingested',
+			color: '#2563eb'
 		}
 	} satisfies Chart.ChartConfig;
-
-	const formatBytes = (bytes: number, decimals = 2) => {
-		if (bytes === 0) return '0 Bytes';
-		const k = 1024;
-		const dm = decimals < 0 ? 0 : decimals;
-		const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-		const i = Math.floor(Math.log(bytes) / Math.log(k));
-		return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-	};
 </script>
 
 <svelte:head>
 	<title>Dashboard - OpenArchiver</title>
-	<meta name="description" content="System health and activity overview." />
+	<meta name="description" content="Overview of your email archive." />
 </svelte:head>
 
-<div class="container mx-auto">
-	<h1 class="mb-6 text-3xl font-bold">Dashboard</h1>
+<div class="flex-1 space-y-4 p-8 pt-6">
+	<div class="flex items-center justify-between space-y-2">
+		<h2 class="text-3xl font-bold tracking-tight">Dashboard</h2>
+	</div>
 
-	<!-- Ingestion Overview -->
-	<section class="mb-8">
-		<h2 class="mb-4 text-2xl font-semibold">Ingestion Overview</h2>
-		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-			{#await stats}
-				<p>Loading stats...</p>
-			{:then statsData}
-				{#if statsData}
-					<Card>
-						<CardHeader>
-							<CardTitle>Total Emails Archived</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<p class="text-4xl font-bold">{statsData.totalEmailsArchived.toLocaleString()}</p>
-						</CardContent>
-					</Card>
-					<Card>
-						<CardHeader>
-							<CardTitle>Total Storage Used</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<p class="text-4xl font-bold">{formatBytes(statsData.totalStorageUsed)}</p>
-						</CardContent>
-					</Card>
-					<Card>
-						<CardHeader>
-							<CardTitle>Failed Ingestions (7 days)</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<p
-								class="text-4xl font-bold"
-								class:text-red-500={statsData.failedIngestionsLast7Days > 0}
-							>
-								{statsData.failedIngestionsLast7Days}
-							</p>
-						</CardContent>
-					</Card>
-				{/if}
-			{/await}
+	{#if data.stats}
+		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+			<Card.Root>
+				<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
+					<Card.Title class="text-sm font-medium">Total Emails Archived</Card.Title>
+				</Card.Header>
+				<Card.Content>
+					<div class="text-2xl font-bold">{data.stats.totalEmailsArchived}</div>
+				</Card.Content>
+			</Card.Root>
+			<Card.Root>
+				<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
+					<Card.Title class="text-sm font-medium">Total Storage Used</Card.Title>
+				</Card.Header>
+				<Card.Content>
+					<div class="text-2xl font-bold">{formatBytes(data.stats.totalStorageUsed)}</div>
+				</Card.Content>
+			</Card.Root>
+			<Card.Root>
+				<Card.Header class="flex flex-row items-center justify-between space-y-0 pb-2">
+					<Card.Title class="text-sm font-medium">Failed Ingestions (Last 7 Days)</Card.Title>
+				</Card.Header>
+				<Card.Content>
+					<div class="text-2xl font-bold">{data.stats.failedIngestionsLast7Days}</div>
+				</Card.Content>
+			</Card.Root>
 		</div>
-	</section>
+	{/if}
 
-	<!-- Charts -->
-	<section class="mb-8 grid gap-8 md:grid-cols-2">
-		<Card>
-			<CardHeader>
-				<CardTitle>Emails Archived (Last 30 Days)</CardTitle>
-			</CardHeader>
-			<CardContent>
-				{#await ingestionHistory}
-					<p>Loading chart...</p>
-				{:then historyData}
-					{#if historyData}
-						<div class="h-64">
-							<Chart.Container config={chartConfig}>
-								<LineChart data={historyData.history} x="date" y="count" />
-							</Chart.Container>
-						</div>
-					{/if}
-				{/await}
-			</CardContent>
-		</Card>
-		<Card>
-			<CardHeader>
-				<CardTitle>Storage Usage by Source</CardTitle>
-			</CardHeader>
-			<CardContent>
-				{#await ingestionSources}
-					<p>Loading chart...</p>
-				{:then sourceData}
-					{#if sourceData}
-						<div class="h-64">
-							<Chart.Container config={chartConfig}>
-								<PieChart
-									data={sourceData}
-									key="id"
-									label="name"
-									value="storageUsed"
-									innerRadius={0.5}
-								/>
-							</Chart.Container>
-						</div>
-					{/if}
-				{/await}
-			</CardContent>
-		</Card>
-	</section>
+	<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+		<Card.Root class="col-span-4">
+			<Card.Header>
+				<Card.Title>Ingestion History</Card.Title>
+			</Card.Header>
+			<Card.Content class="pl-2">
+				{#if data.ingestionHistory && data.ingestionHistory.history.length > 0}
+					<Chart.Container config={chartConfig} class="min-h-[200px] w-full">
+						<BarChart
+							data={data.ingestionHistory.history}
+							x="date"
+							y="count"
+							axis="x"
+							seriesLayout="group"
+							props={{
+								xAxis: {
+									format: (d) =>
+										new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+								}
+							}}
+						>
+							{#snippet tooltip()}
+								<Chart.Tooltip />
+							{/snippet}
+						</BarChart>
+					</Chart.Container>
+				{:else}
+					<p>No ingestion history available.</p>
+				{/if}
+			</Card.Content>
+		</Card.Root>
 
-	<!-- Ingestion Source Status -->
-	<section class="mb-8">
-		<h2 class="mb-4 text-2xl font-semibold">Ingestion Source Status</h2>
-		<Card>
-			<CardContent>
-				{#await ingestionSources}
-					<p>Loading sources...</p>
-				{:then sourceData}
-					{#if sourceData}
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Name</TableHead>
-									<TableHead>Provider</TableHead>
-									<TableHead>Status</TableHead>
-									<TableHead class="text-right">Storage Used</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{#each sourceData as source}
-									<TableRow>
-										<TableCell>{source.name}</TableCell>
-										<TableCell>{source.provider}</TableCell>
-										<TableCell>
-											<Badge
-												class={source.status === 'Active'
-													? 'bg-green-500'
-													: source.status === 'Error'
-														? 'bg-red-500'
-														: 'bg-gray-500'}
-											>
-												{source.status}
-											</Badge>
-										</TableCell>
-										<TableCell class="text-right">{formatBytes(source.storageUsed)}</TableCell>
-									</TableRow>
-								{/each}
-							</TableBody>
-						</Table>
-					{/if}
-				{/await}
-			</CardContent>
-		</Card>
-	</section>
+		<Card.Root class="col-span-3">
+			<Card.Header>
+				<Card.Title>Recent Syncs</Card.Title>
+				<Card.Description>Most recent sync activities.</Card.Description>
+			</Card.Header>
+			<Card.Content>
+				{#if data.recentSyncs && data.recentSyncs.length > 0}
+					<Table.Root>
+						<Table.Header>
+							<Table.Row>
+								<Table.Head>Source</Table.Head>
+								<Table.Head>Status</Table.Head>
+								<Table.Head>Processed</Table.Head>
+							</Table.Row>
+						</Table.Header>
+						<Table.Body>
+							{#each data.recentSyncs as sync}
+								<Table.Row>
+									<Table.Cell class="font-medium">{sync.sourceName}</Table.Cell>
+									<Table.Cell>{sync.status}</Table.Cell>
+									<Table.Cell>{sync.emailsProcessed}</Table.Cell>
+								</Table.Row>
+							{/each}
+						</Table.Body>
+					</Table.Root>
+				{:else}
+					<p>No recent syncs.</p>
+				{/if}
+			</Card.Content>
+		</Card.Root>
+	</div>
 
-	<!-- Recent Sync Jobs -->
-	<section>
-		<h2 class="mb-4 text-2xl font-semibold">Recent Sync Jobs</h2>
-		<Card>
-			<CardContent>
-				{#await recentSyncs}
-					<p>Loading syncs...</p>
-				{:then syncData}
-					{#if syncData && syncData.length > 0}
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Source</TableHead>
-									<TableHead>Start Time</TableHead>
-									<TableHead>Duration</TableHead>
-									<TableHead>Emails Processed</TableHead>
-									<TableHead>Status</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{#each syncData as sync}
-									<TableRow>
-										<TableCell>{sync.sourceName}</TableCell>
-										<TableCell>{new Date(sync.startTime).toLocaleString()}</TableCell>
-										<TableCell>{sync.duration}s</TableCell>
-										<TableCell>{sync.emailsProcessed}</TableCell>
-										<TableCell>
-											<Badge class={sync.status === 'Completed' ? 'bg-green-500' : 'bg-red-500'}>
-												{sync.status}
-											</Badge>
-										</TableCell>
-									</TableRow>
-								{/each}
-							</TableBody>
-						</Table>
-					{:else}
-						<p class="p-4 text-center">No recent sync jobs found.</p>
-					{/if}
-				{/await}
-			</CardContent>
-		</Card>
-	</section>
+	<Card.Root>
+		<Card.Header>
+			<Card.Title>Ingestion Sources</Card.Title>
+			<Card.Description>Overview of your ingestion sources.</Card.Description>
+		</Card.Header>
+		<Card.Content>
+			{#if data.ingestionSources && data.ingestionSources.length > 0}
+				<Table.Root>
+					<Table.Header>
+						<Table.Row>
+							<Table.Head>Name</Table.Head>
+							<Table.Head>Provider</Table.Head>
+							<Table.Head>Status</Table.Head>
+							<Table.Head class="text-right">Storage Used</Table.Head>
+						</Table.Row>
+					</Table.Header>
+					<Table.Body>
+						{#each data.ingestionSources as source}
+							<Table.Row>
+								<Table.Cell class="font-medium">{source.name}</Table.Cell>
+								<Table.Cell>{source.provider}</Table.Cell>
+								<Table.Cell>{source.status}</Table.Cell>
+								<Table.Cell class="text-right">{formatBytes(source.storageUsed)}</Table.Cell>
+							</Table.Row>
+						{/each}
+					</Table.Body>
+				</Table.Root>
+			{:else}
+				<p>No ingestion sources found.</p>
+			{/if}
+		</Card.Content>
+	</Card.Root>
 </div>

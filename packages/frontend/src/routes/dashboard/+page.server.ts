@@ -52,10 +52,17 @@ export const load: PageServerLoad = async (event) => {
         }
     };
 
+    const [stats, ingestionHistory, ingestionSources, recentSyncs] = await Promise.all([
+        fetchStats(),
+        fetchIngestionHistory(),
+        fetchIngestionSources(),
+        fetchRecentSyncs()
+    ]);
+
     return {
-        stats: fetchStats(),
-        ingestionHistory: fetchIngestionHistory(),
-        ingestionSources: fetchIngestionSources(),
-        recentSyncs: fetchRecentSyncs()
+        stats,
+        ingestionHistory,
+        ingestionSources,
+        recentSyncs
     };
 };
