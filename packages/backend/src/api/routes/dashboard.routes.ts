@@ -12,6 +12,7 @@ export const createDashboardRouter = (authService: IAuthService): Router => {
     router.get('/ingestion-history', dashboardController.getIngestionHistory);
     router.get('/ingestion-sources', dashboardController.getIngestionSources);
     router.get('/recent-syncs', dashboardController.getRecentSyncs);
+    router.get('/indexed-insights', dashboardController.getIndexedInsights);
 
     return router;
 };

@@ -1,6 +1,6 @@
 import { Index, MeiliSearch, SearchParams } from 'meilisearch';
 import { config } from '../config';
-import type { SearchQuery, SearchResult, EmailDocument } from '@open-archiver/types';
+import type { SearchQuery, SearchResult, EmailDocument, TopSender } from '@open-archiver/types';
 
 export class SearchService {
     private client: MeiliSearch;
@@ -71,6 +71,26 @@ export class SearchService {
             totalPages: Math.ceil((searchResults.estimatedTotalHits ?? searchResults.hits.length) / limit),
             processingTimeMs: searchResults.processingTimeMs
         };
+    }
+
+    public async getTopSenders(limit = 10): Promise<TopSender[]> {
+        const index = await this.getIndex<EmailDocument>('emails');
+        const searchResults = await index.search('', {
+            facets: ['from'],
+            limit: 0
+        });
+
+        if (!searchResults.facetDistribution?.from) {
+            return [];
+        }
+
+        // Sort and take top N
+        const sortedSenders = Object.entries(searchResults.facetDistribution.from)
+            .sort(([, countA], [, countB]) => countB - countA)
+            .slice(0, limit)
+            .map(([sender, count]) => ({ sender, count }));
+
+        return sortedSenders;
     }
 
     public async configureEmailIndex() {

@@ -27,3 +27,12 @@ export interface RecentSync {
     emailsProcessed: number;
     status: string;
 }
+
+export interface TopSender {
+    sender: string;
+    count: number;
+}
+
+export interface IndexedInsights {
+    topSenders: TopSender[];
+}

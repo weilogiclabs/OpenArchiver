@@ -1,13 +1,17 @@
 import { and, count, eq, gte, sql } from 'drizzle-orm';
+import type { IndexedInsights } from '@open-archiver/types';
 
 import { archivedEmails, ingestionSources } from '../database/schema';
 import { DatabaseService } from './DatabaseService';
+import { SearchService } from './SearchService';
 
 class DashboardService {
     #db;
+    #searchService;
 
-    constructor(databaseService: DatabaseService) {
+    constructor(databaseService: DatabaseService, searchService: SearchService) {
         this.#db = databaseService.db;
+        this.#searchService = searchService;
     }
 
     public async getStats() {
@@ -73,6 +77,13 @@ class DashboardService {
         // This is a placeholder as we don't have a sync job table yet.
         return Promise.resolve([]);
     }
+
+    public async getIndexedInsights(): Promise<IndexedInsights> {
+        const topSenders = await this.#searchService.getTopSenders(10);
+        return {
+            topSenders
+        };
+    }
 }
 
-export const dashboardService = new DashboardService(new DatabaseService());
+export const dashboardService = new DashboardService(new DatabaseService(), new SearchService());

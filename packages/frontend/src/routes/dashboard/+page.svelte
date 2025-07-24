@@ -1,14 +1,13 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import * as Chart from '$lib/components/ui/chart/index.js';
-	import { LineChart, PieChart, AreaChart } from 'layerchart';
 	import { formatBytes } from '$lib/utils';
-	import { curveCatmullRom } from 'd3-shape';
-	import type { ChartConfig } from '$lib/components/ui/chart';
 	import EmptyState from '$lib/components/custom/EmptyState.svelte';
 	import { goto } from '$app/navigation';
 	import { Archive, CircleAlert, HardDrive } from 'lucide-svelte';
+	import TopSendersChart from '$lib/components/custom/charts/TopSendersChart.svelte';
+	import IngestionHistoryChart from '$lib/components/custom/charts/IngestionHistoryChart.svelte';
+	import StorageBySourceChart from '$lib/components/custom/charts/StorageBySourceChart.svelte';
 	let { data }: { data: PageData } = $props();
 
 	const transformedHistory = $derived(
@@ -17,19 +16,6 @@
 			date: new Date(item.date)
 		})) ?? []
 	);
-
-	const emailIngestedChartConfig = {
-		count: {
-			label: 'Emails Ingested',
-			color: 'var(--chart-1)'
-		}
-	} satisfies ChartConfig;
-
-	const StorageUsedChartConfig = {
-		storageUsed: {
-			label: 'Storage Used'
-		}
-	} satisfies ChartConfig;
 </script>
 
 <svelte:head>
@@ -102,44 +88,7 @@
 						</Card.Header>
 						<Card.Content class=" pl-4">
 							{#if transformedHistory.length > 0}
-								<Chart.Container config={emailIngestedChartConfig} class="min-h-[300px] w-full">
-									<AreaChart
-										data={transformedHistory}
-										x="date"
-										y="count"
-										yDomain={[0, Math.max(...transformedHistory.map((d) => d.count)) * 1.1]}
-										axis
-										legend={false}
-										series={[
-											{
-												key: 'count',
-												...emailIngestedChartConfig.count
-											}
-										]}
-										cRange={[
-											'var(--color-chart-1)',
-											'var(--color-chart-2)',
-											'var(--color-chart-3)',
-											'var(--color-chart-4)',
-											'var(--color-chart-5)'
-										]}
-										labels={{}}
-										props={{
-											xAxis: {
-												format: (d) =>
-													new Date(d).toLocaleDateString('en-US', {
-														month: 'short',
-														day: 'numeric'
-													})
-											},
-											area: { curve: curveCatmullRom }
-										}}
-									>
-										{#snippet tooltip()}
-											<Chart.Tooltip />
-										{/snippet}
-									</AreaChart>
-								</Chart.Container>
+								<IngestionHistoryChart data={transformedHistory} />
 							{:else}
 								<p>No ingestion history available.</p>
 							{/if}
@@ -153,35 +102,30 @@
 						</Card.Header>
 						<Card.Content class="h-full">
 							{#if data.ingestionSources && data.ingestionSources.length > 0}
-								<Chart.Container
-									config={StorageUsedChartConfig}
-									class="h-full min-h-[300px] w-full"
-								>
-									<PieChart
-										data={data.ingestionSources}
-										key="name"
-										value="storageUsed"
-										label="name"
-										legend={{}}
-										cRange={[
-											'var(--color-chart-1)',
-											'var(--color-chart-2)',
-											'var(--color-chart-3)',
-											'var(--color-chart-4)',
-											'var(--color-chart-5)'
-										]}
-									>
-										{#snippet tooltip()}
-											<Chart.Tooltip></Chart.Tooltip>
-										{/snippet}
-									</PieChart>
-								</Chart.Container>
+								<StorageBySourceChart data={data.ingestionSources} />
 							{:else}
 								<p>No ingestion sources available.</p>
 							{/if}
 						</Card.Content>
 					</Card.Root>
 				</div>
+			</div>
+			<div>
+				<h1 class="text-xl font-semibold leading-6">Indexed insights</h1>
+			</div>
+			<div class="grid grid-cols-1">
+				<Card.Root>
+					<Card.Header>
+						<Card.Title>Top 10 Senders</Card.Title>
+					</Card.Header>
+					<Card.Content>
+						{#if data.indexedInsights && data.indexedInsights.topSenders.length > 0}
+							<TopSendersChart data={data.indexedInsights.topSenders} />
+						{:else}
+							<p>No indexed insights available.</p>
+						{/if}
+					</Card.Content>
+				</Card.Root>
 			</div>
 		</div>
 	{/if}

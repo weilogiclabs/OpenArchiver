@@ -4,7 +4,8 @@ import type {
     DashboardStats,
     IngestionHistory,
     IngestionSourceStats,
-    RecentSync
+    RecentSync,
+    IndexedInsights
 } from '@open-archiver/types';
 
 export const load: PageServerLoad = async (event) => {
@@ -52,17 +53,31 @@ export const load: PageServerLoad = async (event) => {
         }
     };
 
-    const [stats, ingestionHistory, ingestionSources, recentSyncs] = await Promise.all([
-        fetchStats(),
-        fetchIngestionHistory(),
-        fetchIngestionSources(),
-        fetchRecentSyncs()
-    ]);
+    const fetchIndexedInsights = async (): Promise<IndexedInsights | null> => {
+        try {
+            const response = await api('/dashboard/indexed-insights', event);
+            if (!response.ok) throw new Error('Failed to fetch indexed insights');
+            return await response.json();
+        } catch (error) {
+            console.error('Indexed Insights Error:', error);
+            return null;
+        }
+    };
+
+    const [stats, ingestionHistory, ingestionSources, recentSyncs, indexedInsights] =
+        await Promise.all([
+            fetchStats(),
+            fetchIngestionHistory(),
+            fetchIngestionSources(),
+            fetchRecentSyncs(),
+            fetchIndexedInsights()
+        ]);
 
     return {
         stats,
         ingestionHistory,
         ingestionSources,
-        recentSyncs
+        recentSyncs,
+        indexedInsights
     };
 };

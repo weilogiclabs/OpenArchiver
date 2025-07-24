@@ -21,6 +21,11 @@ class DashboardController {
         const syncs = await dashboardService.getRecentSyncs();
         res.json(syncs);
     }
+
+    public async getIndexedInsights(req: Request, res: Response) {
+        const insights = await dashboardService.getIndexedInsights();
+        res.json(insights);
+    }
 }
 
 export const dashboardController = new DashboardController();
