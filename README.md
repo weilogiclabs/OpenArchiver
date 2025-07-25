@@ -71,6 +71,14 @@ Open Archiver is built on a modern, scalable, and maintainable technology stack:
 4.  **Access the application:**
     Once the services are running, you can access the Open Archiver web interface by navigating to `http://localhost:3000` in your web browser.
 
+## Data Source Configuration
+
+After deploying the application, you will need to configure one or more ingestion sources to begin archiving emails. Follow our detailed guides to connect to your email provider:
+
+-   [Connecting to Google Workspace](docs/services/email-providers/google-workspace.md)
+-   [Connecting to Microsoft 365](docs/services/email-providers/microsoft-365.md)
+-   [Connecting to a Generic IMAP Server](docs/services/email-providers/imap.md)
+
 ## Contributing
 
 We welcome contributions from the community!
