@@ -30,10 +30,10 @@ Open Archiver is built on a modern, scalable, and maintainable technology stack:
 
 -   **Frontend**: SvelteKit with Svelte 5
 -   **Backend**: Node.js with Express.js & TypeScript
--   **Job Queue**: BullMQ on Redis for robust, asynchronous processing
+-   **Job Queue**: BullMQ on Redis for robust, asynchronous processing. (We use Valkey as the Redis service in the Docker Compose deployment mode, but you can use Redis as well.)
 -   **Search Engine**: Meilisearch for blazingly fast and resource-efficient search
 -   **Database**: PostgreSQL for metadata, user management, and audit logs
--   **Deployment**: Docker Compose for easy, one-command deployment
+-   **Deployment**: Docker Compose deployment
 
 ## Deployment
 
