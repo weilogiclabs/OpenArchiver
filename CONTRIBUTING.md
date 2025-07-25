@@ -29,6 +29,23 @@ If you have an idea for an enhancement, please open an issue to discuss it. This
 6.  **Update the documentation** if your changes require it.
 7.  **Submit a pull request** to the `main` branch of the main repository. Please provide a clear description of the problem and solution. Include the relevant issue number if applicable.
 
+## Contributor License Agreement
+
+By submitting a pull request to this repository, you agree to the following terms and conditions for your contributions:
+
+1.  **Grant of Rights.** You grant to us and our users a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable license to your contributions, allowing us to reproduce, prepare derivative works of, publicly display, publicly perform, sublicense, and distribute them and such derivative works. This license applies to both copyright and patent claims that you can license, which are necessarily infringed by your contribution alone or in combination with the project.
+
+2.  **Your Representations.** You represent that:
+
+    -   You are legally entitled to grant the above license.
+    -   If your employer has rights to intellectual property that you create, you have received permission to make the contributions on behalf of that employer, or your employer has waived such rights for your contributions.
+    -   Your contribution is your own original work.
+    -   You are not granting a license to any patents or copyrights that you do not own.
+
+3.  **No Other Rights.** Except for the license granted herein, you reserve all right, title, and interest in and to your contributions.
+
+By submitting a contribution, you are agreeing to this license for your contribution. You also agree that you have read and understood this agreement.
+
 ## Code of Conduct
 
 This project and everyone participating in it is governed by the [Open Archiver Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior.
