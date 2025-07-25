@@ -6,13 +6,13 @@ Open Archiver provides a robust, self-hosted solution for archiving, storing, in
 
 ## Screenshots
 
-![Open Archiver Preview](assets/screenshots/dashboard.png)
+![Open Archiver Preview](assets/screenshots/dashboard-1.png)
 _Dashboard_
 
-![Open Archiver Preview](assets/screenshots/archived-emails.png)
+![Open Archiver Preview](assets/screenshots/archived-emails-1.png)
 _Archived emails_
 
-![Open Archiver Preview](assets/screenshots/search.png)
+![Open Archiver Preview](assets/screenshots/search-1.png)
 _Full-text search across all your emails and attachments_
 
 ## Key Features
