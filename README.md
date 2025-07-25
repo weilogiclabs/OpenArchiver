@@ -75,9 +75,9 @@ Open Archiver is built on a modern, scalable, and maintainable technology stack:
 
 After deploying the application, you will need to configure one or more ingestion sources to begin archiving emails. Follow our detailed guides to connect to your email provider:
 
--   [Connecting to Google Workspace](docs/services/email-providers/google-workspace.md)
--   [Connecting to Microsoft 365](docs/services/email-providers/microsoft-365.md)
--   [Connecting to a Generic IMAP Server](docs/services/email-providers/imap.md)
+-   [Connecting to Google Workspace](docs/user-guides/email-providers/google-workspace.md)
+-   [Connecting to Microsoft 365](docs/user-guides/email-providers/microsoft-365.md)
+-   [Connecting to a Generic IMAP Server](docs/user-guides/email-providers/imap.md)
 
 ## Contributing
 
