@@ -35,9 +35,6 @@ COPY packages/backend/package.json ./packages/backend/
 COPY packages/frontend/package.json ./packages/frontend/
 COPY packages/types/package.json ./packages/types/
 
-# Install only production dependencies
-RUN pnpm install --frozen-lockfile --prod
-
 # Copy built application from build stage
 COPY --from=build /app/packages/backend/dist ./packages/backend/dist
 COPY --from=build /app/packages/frontend/build ./packages/frontend/build
@@ -45,9 +42,16 @@ COPY --from=build /app/packages/types/dist ./packages/types/dist
 COPY --from=build /app/packages/backend/drizzle.config.ts ./packages/backend/drizzle.config.ts
 COPY --from=build /app/packages/backend/src/database/migrations ./packages/backend/src/database/migrations
 
+# Copy the entrypoint script and make it executable
+COPY docker/docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Expose the port the app runs on
 EXPOSE 4000
 EXPOSE 3000
+
+# Set the entrypoint
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 # Start the application
 CMD ["pnpm", "docker-start"]

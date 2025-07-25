@@ -10,7 +10,7 @@
         "db:generate": "dotenv -- pnpm --filter @open-archiver/backend db:generate",
         "db:migrate": "dotenv -- pnpm --filter @open-archiver/backend db:migrate",
         "db:migrate:dev": "dotenv -- pnpm --filter @open-archiver/backend db:migrate:dev",
-        "docker-start": "pnpm db:migrate && concurrently \"pnpm start:workers\" \"pnpm start\""
+        "docker-start": "concurrently \"pnpm start:workers\" \"pnpm start\""
     },
     "dependencies": {
         "concurrently": "^9.2.0",

@@ -1,15 +1,17 @@
 import type { Handle } from '@sveltejs/kit';
 import { jwtVerify } from 'jose';
 import type { User } from '@open-archiver/types';
+import { JWT_SECRET } from '$env/static/private';
 
-const JWT_SECRET = new TextEncoder().encode('a-very-secret-key');
+
+const JWT_SECRET_ENCODED = new TextEncoder().encode(JWT_SECRET);
 
 export const handle: Handle = async ({ event, resolve }) => {
     const token = event.cookies.get('accessToken');
 
     if (token) {
         try {
-            const { payload } = await jwtVerify(token, JWT_SECRET);
+            const { payload } = await jwtVerify(token, JWT_SECRET_ENCODED);
             event.locals.user = payload as Omit<User, 'passwordHash'>;
             event.locals.accessToken = token;
         } catch (error) {
