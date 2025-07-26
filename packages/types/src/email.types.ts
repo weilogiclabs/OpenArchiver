@@ -37,8 +37,8 @@ export interface EmailObject {
     body: string;
     /** The HTML version of the email body, if available. */
     html: string;
-    /** A record of all email headers, where keys are header names and values can be a string or an array of strings. */
-    headers: Record<string, string | string[]>;
+    /** A map of all email headers, where keys are header names and values can be a string, an array of strings, or a complex object. */
+    headers: Map<string, any>;
     /** An array of `EmailAttachment` objects found in the email. */
     attachments: EmailAttachment[];
     /** The date and time when the email was received. */

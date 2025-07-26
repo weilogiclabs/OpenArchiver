@@ -15,7 +15,7 @@ interface ISyncCycleFinishedJob {
 
 export default async (job: Job<ISyncCycleFinishedJob, any, string>) => {
     const { ingestionSourceId, userCount, isInitialImport } = job.data;
-    logger.info({ ingestionSourceId }, 'Sync cycle finished, processing results...');
+    logger.info({ ingestionSourceId, userCount, isInitialImport }, 'Sync cycle finished job started');
 
     try {
         const childrenJobs = await job.getChildrenValues<SyncState>();

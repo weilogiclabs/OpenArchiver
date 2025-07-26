@@ -33,6 +33,7 @@ const worker = new Worker('ingestion', processor, {
     },
 });
 
+
 console.log('Ingestion worker started');
 
 process.on('SIGINT', () => worker.close());

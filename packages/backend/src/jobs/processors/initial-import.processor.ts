@@ -40,6 +40,7 @@ export default async (job: Job<IInitialImportJob>) => {
         }
 
         if (jobs.length > 0) {
+            logger.info({ ingestionSourceId, userCount }, 'Adding sync-cycle-finished job to the queue');
             await flowProducer.add({
                 name: 'sync-cycle-finished',
                 queueName: 'ingestion',

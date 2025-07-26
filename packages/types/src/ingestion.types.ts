@@ -10,7 +10,9 @@ export type SyncState = {
         };
     };
     imap?: {
-        maxUid: number;
+        [mailboxPath: string]: {
+            maxUid: number;
+        };
     };
     lastSyncTimestamp?: string;
 };

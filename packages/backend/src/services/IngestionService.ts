@@ -6,7 +6,7 @@ import type {
     IngestionSource,
     IngestionCredentials
 } from '@open-archiver/types';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { CryptoService } from './CryptoService';
 import { EmailProviderFactory } from './EmailProviderFactory';
 import { ingestionQueue } from '../jobs/queues';
@@ -203,6 +203,31 @@ export class IngestionService {
         userEmail: string
     ): Promise<void> {
         try {
+            // Generate a unique message ID for the email. If the email already has a message-id header, use that.
+            // Otherwise, generate a new one based on the email's hash, source ID, and email ID.
+            const messageIdHeader = email.headers.get('message-id');
+            let messageId: string | undefined;
+            if (Array.isArray(messageIdHeader)) {
+                messageId = messageIdHeader[0];
+            } else if (typeof messageIdHeader === 'string') {
+                messageId = messageIdHeader;
+            }
+            if (!messageId) {
+                messageId = `generated-${createHash('sha256').update(email.eml ?? Buffer.from(email.body, 'utf-8')).digest('hex')}-${source.id}-${email.id}`;
+            }
+            // Check if an email with the same message ID has already been imported for the current ingestion source. This is to prevent duplicate imports when an email is present in multiple mailboxes (e.g., "Inbox" and "All Mail").
+            const existingEmail = await db.query.archivedEmails.findFirst({
+                where: and(
+                    eq(archivedEmails.messageIdHeader, messageId),
+                    eq(archivedEmails.ingestionSourceId, source.id)
+                )
+            });
+
+            if (existingEmail) {
+                logger.info({ messageId, ingestionSourceId: source.id }, 'Skipping duplicate email');
+                return;
+            }
+
             console.log('processing email, ', email.id, email.subject);
             const emlBuffer = email.eml ?? Buffer.from(email.body, 'utf-8');
             const emailHash = createHash('sha256').update(emlBuffer).digest('hex');
@@ -214,9 +239,7 @@ export class IngestionService {
                 .values({
                     ingestionSourceId: source.id,
                     userEmail,
-                    messageIdHeader:
-                        (email.headers['message-id'] as string) ??
-                        `generated-${emailHash}-${source.id}-${email.id}`,
+                    messageIdHeader: messageId,
                     sentAt: email.receivedAt,
                     subject: email.subject,
                     senderName: email.from[0]?.name,

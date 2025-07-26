@@ -263,7 +263,7 @@ export class MicrosoftConnector implements IEmailConnector {
             subject: parsedEmail.subject || '',
             body: parsedEmail.text || '',
             html: parsedEmail.html || '',
-            headers: parsedEmail.headers as any,
+            headers: parsedEmail.headers,
             attachments,
             receivedAt: parsedEmail.date || new Date(),
         };
