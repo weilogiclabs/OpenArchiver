@@ -161,7 +161,7 @@ export class IngestionService {
             if (connector.listAllUsers) {
                 // For multi-mailbox providers, dispatch a job for each user
                 for await (const user of connector.listAllUsers()) {
-                    const userEmail = (user as any).primaryEmail;
+                    const userEmail = user.primaryEmail;
                     if (userEmail) {
                         await ingestionQueue.add('process-mailbox', {
                             ingestionSourceId: source.id,
