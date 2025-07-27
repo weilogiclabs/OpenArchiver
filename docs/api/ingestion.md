@@ -1,6 +1,6 @@
 # Ingestion Sources API Documentation
 
-A comprehensive guide to using the Ingestion Sources API.
+A guide to using the Ingestion Sources API.
 
 **Base Path:** `/v1/ingestion-sources`
 
