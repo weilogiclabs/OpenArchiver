@@ -30,7 +30,13 @@ export default defineConfig({
                 text: 'API Reference',
                 items: [
                     { text: 'Overview', link: '/api/' },
-                    { text: 'Ingestion API', link: '/api/ingestion' }
+                    { text: 'Authentication', link: '/api/authentication' },
+                    { text: 'Auth', link: '/api/auth' },
+                    { text: 'Archived Email', link: '/api/archived-email' },
+                    { text: 'Dashboard', link: '/api/dashboard' },
+                    { text: 'Ingestion', link: '/api/ingestion' },
+                    { text: 'Search', link: '/api/search' },
+                    { text: 'Storage', link: '/api/storage' }
                 ]
             },
             {
