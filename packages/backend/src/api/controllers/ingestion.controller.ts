@@ -94,4 +94,18 @@ export class IngestionController {
             return res.status(500).json({ message: 'An internal server error occurred' });
         }
     };
+
+    public triggerForceSync = async (req: Request, res: Response): Promise<Response> => {
+        try {
+            const { id } = req.params;
+            await IngestionService.triggerForceSync(id);
+            return res.status(202).json({ message: 'Force sync triggered successfully.' });
+        } catch (error) {
+            console.error(`Trigger force sync for ${req.params.id} error:`, error);
+            if (error instanceof Error && error.message === 'Ingestion source not found') {
+                return res.status(404).json({ message: error.message });
+            }
+            return res.status(500).json({ message: 'An internal server error occurred' });
+        }
+    };
 }

@@ -133,12 +133,21 @@ export class IngestionService {
         return this.decryptSource(deletedSource);
     }
 
-    public static async triggerInitialImport(id: string): Promise<IngestionSource> {
+    public static async triggerInitialImport(id: string): Promise<void> {
         const source = await this.findById(id);
 
         await ingestionQueue.add('initial-import', { ingestionSourceId: source.id });
 
-        return await this.update(id, { status: 'importing' });
+    }
+
+    public static async triggerForceSync(id: string): Promise<void> {
+        const source = await this.findById(id);
+
+        if (!source) {
+            throw new Error('Ingestion source not found');
+        }
+
+        await ingestionQueue.add('continuous-sync', { ingestionSourceId: source.id });
     }
 
     public async performBulkImport(job: IInitialImportJob): Promise<void> {

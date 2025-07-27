@@ -53,7 +53,7 @@
 		await api(`/ingestion-sources/${id}/sync`, { method: 'POST' });
 		const updatedSources = ingestionSources.map((s) => {
 			if (s.id === id) {
-				return { ...s, status: 'importing' as const };
+				return { ...s, status: 'syncing' as const };
 			}
 			return s;
 		});

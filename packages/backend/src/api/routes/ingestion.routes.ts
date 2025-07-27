@@ -22,9 +22,11 @@ export const createIngestionRouter = (
 
     router.delete('/:id', ingestionController.delete);
 
-    router.post('/:id/sync', ingestionController.triggerInitialImport);
+    router.post('/:id/import', ingestionController.triggerInitialImport);
 
     router.post('/:id/pause', ingestionController.pause);
+
+    router.post('/:id/sync', ingestionController.triggerForceSync);
 
     return router;
 };

@@ -135,7 +135,7 @@
 			{#if isSubmitting}
 				Submitting...
 			{:else}
-				Save changes
+				Submit
 			{/if}
 		</Button>
 	</Dialog.Footer>

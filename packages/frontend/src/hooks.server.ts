@@ -1,10 +1,11 @@
 import type { Handle } from '@sveltejs/kit';
 import { jwtVerify } from 'jose';
 import type { User } from '@open-archiver/types';
-import { JWT_SECRET } from '$env/static/private';
+import 'dotenv/config';
 
 
-const JWT_SECRET_ENCODED = new TextEncoder().encode(JWT_SECRET);
+
+const JWT_SECRET_ENCODED = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export const handle: Handle = async ({ event, resolve }) => {
     const token = event.cookies.get('accessToken');
