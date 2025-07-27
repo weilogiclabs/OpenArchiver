@@ -2,7 +2,7 @@
 
 ## User guides
 
--   [Get started](get-started.md)
+-   [Get started](README.md)
 -   [Installation](user-guides/installation.md)
 -   [email-providers](user-guides/email-providers/README.md)
     -   [Connecting to Google Workspace](user-guides/email-providers/google-workspace.md)
