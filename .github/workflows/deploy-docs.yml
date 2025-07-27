@@ -31,6 +31,9 @@ jobs:
             - name: Build documentation site
               run: pnpm docs:build
 
+            - name: Create CNAME file
+              run: echo "docs.openarchiver.com" > docs/.vitepress/dist/CNAME
+
             - name: Deploy to GitHub Pages
               uses: peaceiris/actions-gh-pages@v3
               with:

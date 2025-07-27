@@ -1,8 +1,8 @@
 import { defineConfig } from 'vitepress';
 
 export default defineConfig({
-    title: 'OpenArchiver Documentation',
-    description: 'Official documentation for the OpenArchiver project.',
+    title: 'Open Archiver Documentation',
+    description: 'Official documentation for the Open Archiver project.',
     themeConfig: {
         nav: [
             { text: 'Home', link: '/' },
