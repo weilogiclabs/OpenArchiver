@@ -1,28 +1,46 @@
 import { Request, Response } from 'express';
 import { StorageService } from '../../services/StorageService';
+import * as path from 'path';
+import { storage as storageConfig } from '../../config/storage';
 
 export class StorageController {
     constructor(private storageService: StorageService) { }
 
     public downloadFile = async (req: Request, res: Response): Promise<void> => {
-        const filePath = req.query.path as string;
+        const unsafePath = req.query.path as string;
 
-        if (!filePath) {
+        if (!unsafePath) {
             res.status(400).send('File path is required');
             return;
         }
 
+        // Normalize the path to prevent directory traversal
+        const normalizedPath = path.normalize(unsafePath).replace(/^(\.\.(\/|\\|$))+/, '');
+
+        // Determine the base path from storage configuration
+        const basePath = storageConfig.type === 'local' ? storageConfig.rootPath : '/';
+
+        // Resolve the full path and ensure it's within the storage directory
+        const fullPath = path.join(basePath, normalizedPath);
+
+        if (!fullPath.startsWith(basePath)) {
+            res.status(400).send('Invalid file path');
+            return;
+        }
+
+        // Use the sanitized, relative path for storage service operations
+        const safePath = path.relative(basePath, fullPath);
+
         try {
-            const fileExists = await this.storageService.exists(filePath);
+            const fileExists = await this.storageService.exists(safePath);
             if (!fileExists) {
-                console.log(filePath);
                 res.status(404).send('File not found');
                 return;
             }
 
-            const fileStream = await this.storageService.get(filePath);
-            const fileName = filePath.split('/').pop();
-            res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+            const fileStream = await this.storageService.get(safePath);
+            const fileName = path.basename(safePath);
+            res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
             fileStream.pipe(res);
         } catch (error) {
             console.error('Error downloading file:', error);

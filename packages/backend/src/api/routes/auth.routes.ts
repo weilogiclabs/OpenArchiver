@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { loginRateLimiter } from '../middleware/rateLimiter';
 import type { AuthController } from '../controllers/auth.controller';
 
 export const createAuthRouter = (authController: AuthController): Router => {
@@ -9,7 +10,7 @@ export const createAuthRouter = (authController: AuthController): Router => {
      * @description Authenticates a user and returns a JWT.
      * @access Public
      */
-    router.post('/login', authController.login);
+    router.post('/login', loginRateLimiter, authController.login);
 
     return router;
 };

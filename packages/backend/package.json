@@ -19,7 +19,6 @@
         "db:migrate:dev": "ts-node-dev src/database/migrate.ts"
     },
     "dependencies": {
-        "drizzle-kit": "^0.31.4",
         "@aws-sdk/client-s3": "^3.844.0",
         "@aws-sdk/lib-storage": "^3.844.0",
         "@azure/msal-node": "^3.6.3",
@@ -31,8 +30,10 @@
         "cross-fetch": "^4.1.0",
         "deepmerge-ts": "^7.1.5",
         "dotenv": "^17.2.0",
+        "drizzle-kit": "^0.31.4",
         "drizzle-orm": "^0.44.2",
         "express": "^5.1.0",
+        "express-rate-limit": "^8.0.1",
         "express-validator": "^7.2.1",
         "google-auth-library": "^10.1.0",
         "googleapis": "^152.0.0",
