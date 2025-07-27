@@ -9,7 +9,6 @@ dist
 **/meili_data/
 
 # PNPM
-pnpm-lock.yaml
 pnpm-debug.log
 
 # IDE
