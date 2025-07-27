@@ -1,206 +1,168 @@
-# Ingestion Sources API Documentation
+# Ingestion Service API
 
-A guide to using the Ingestion Sources API.
+The Ingestion Service manages ingestion sources, which are configurations for connecting to email providers and importing emails.
 
-**Base Path:** `/v1/ingestion-sources`
+## Endpoints
 
----
+All endpoints in this service require authentication.
 
-## Authentication
+### POST /api/v1/ingestion
 
-All endpoints in this API are protected and require authentication. Requests must include an `Authorization` header containing a valid Bearer token. This can be a JWT obtained from the login endpoint or a `SUPER_API_KEY` for administrative tasks.
+Creates a new ingestion source.
 
-**Header Example:**
-`Authorization: Bearer <YOUR_JWT_OR_SUPER_API_KEY>`
+**Access:** Authenticated
 
----
+#### Request Body
 
-## Core Concepts
+The request body should be a `CreateIngestionSourceDto` object.
 
-### Ingestion Providers
-
-The `provider` field determines the type of email source. Each provider requires a different configuration object, for example:
-
--   `google_workspace`: For connecting to Google Workspace accounts via OAuth 2.0.
--   `microsoft_365`: For connecting to Microsoft 365 accounts via OAuth 2.0.
--   `generic_imap`: For connecting to any email server that supports IMAP.
-
-### Ingestion Status
-
-The `status` field tracks the state of the ingestion source.
-
--   `pending_auth`: The source has been created but requires user authorization (OAuth flow).
--   `active`: The source is authenticated and ready to sync.
--   `syncing`: An import job is currently in progress.
--   `importing`: initial syncing in progress
--   `paused`: The source is temporarily disabled.
--   `error`: An error occurred during the last sync.
-
----
-
-## 1. Create Ingestion Source
-
--   **Method:** `POST`
--   **Path:** `/`
--   **Description:** Registers a new source for email ingestion. The `providerConfig` will vary based on the selected `provider`.
-
-#### Request Body (`CreateIngestionSourceDto`)
-
--   `name` (string, required): A user-friendly name for the source (e.g., "Marketing Department G-Suite").
--   `provider` (string, required): One of `google_workspace`, `microsoft_365`, or `generic_imap`.
--   `providerConfig` (object, required): Configuration specific to the provider.
-
-##### `providerConfig` for `google_workspace` / `microsoft_365`
-
-```json
-{
-    "name": "Corporate Google Workspace",
-    "provider": "google_workspace",
-    "providerConfig": {
-        "clientId": "your-oauth-client-id.apps.googleusercontent.com",
-        "clientSecret": "your-super-secret-client-secret",
-        "redirectUri": "https://yourapp.com/oauth/google/callback"
-    }
-}
-```
-
-##### `providerConfig` for `generic_imap`
-
-```json
-{
-    "name": "Legacy IMAP Server",
-    "provider": "generic_imap",
-    "providerConfig": {
-        "host": "imap.example.com",
-        "port": 993,
-        "secure": true,
-        "username": "archive-user",
-        "password": "imap-password"
-    }
+```typescript
+interface CreateIngestionSourceDto {
+    name: string;
+    provider: 'google' | 'microsoft' | 'generic_imap';
+    providerConfig: IngestionCredentials;
 }
 ```
 
 #### Responses
 
--   **Success (`201 Created`):** Returns the full `IngestionSource` object, which now includes a system-generated `id` and default status.
+-   **201 Created:** The newly created ingestion source.
+-   **500 Internal Server Error:** An unexpected error occurred.
 
-    ```json
-    {
-        "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-        "name": "Corporate Google Workspace",
-        "provider": "google_workspace",
-        "status": "pending_auth",
-        "createdAt": "2025-07-11T12:00:00.000Z",
-        "updatedAt": "2025-07-11T12:00:00.000Z",
-        "providerConfig": { ... }
-    }
-    ```
+### GET /api/v1/ingestion
 
--   **Error (`500 Internal Server Error`):** Indicates a server-side problem during creation.
+Retrieves all ingestion sources.
 
----
-
-## 2. Get All Ingestion Sources
-
--   **Method:** `GET`
--   **Path:** `/`
--   **Description:** Retrieves a list of all configured ingestion sources for the organization.
+**Access:** Authenticated
 
 #### Responses
 
--   **Success (`200 OK`):** Returns an array of `IngestionSource` objects.
+-   **200 OK:** An array of ingestion source objects.
+-   **500 Internal Server Error:** An unexpected error occurred.
 
--   **Error (`500 Internal Server Error`):** Indicates a server-side problem.
+### GET /api/v1/ingestion/:id
 
----
+Retrieves a single ingestion source by its ID.
 
-## 3. Get Ingestion Source by ID
-
--   **Method:** `GET`
--   **Path:** `/:id`
--   **Description:** Fetches the details of a specific ingestion source.
+**Access:** Authenticated
 
 #### URL Parameters
 
--   `id` (string, required): The UUID of the ingestion source.
+| Parameter | Type   | Description                     |
+| :-------- | :----- | :------------------------------ |
+| `id`      | string | The ID of the ingestion source. |
 
 #### Responses
 
--   **Success (`200 OK`):** Returns the corresponding `IngestionSource` object.
+-   **200 OK:** The ingestion source object.
+-   **404 Not Found:** Ingestion source not found.
+-   **500 Internal Server Error:** An unexpected error occurred.
 
--   **Error (`404 Not Found`):** Returned if no source with the given ID exists.
--   **Error (`500 Internal Server Error`):** Indicates a server-side problem.
+### PUT /api/v1/ingestion/:id
 
----
+Updates an existing ingestion source.
 
-## 4. Update Ingestion Source
-
--   **Method:** `PUT`
--   **Path:** `/:id`
--   **Description:** Modifies an existing ingestion source. This is useful for changing the name, pausing a source, or updating its configuration.
+**Access:** Authenticated
 
 #### URL Parameters
 
--   `id` (string, required): The UUID of the ingestion source to update.
+| Parameter | Type   | Description                     |
+| :-------- | :----- | :------------------------------ |
+| `id`      | string | The ID of the ingestion source. |
 
-#### Request Body (`UpdateIngestionSourceDto`)
+#### Request Body
 
-All fields are optional. Only include the fields you want to change.
+The request body should be an `UpdateIngestionSourceDto` object.
 
-```json
-{
-    "name": "Marketing Dept G-Suite (Paused)",
-    "status": "paused"
+```typescript
+interface UpdateIngestionSourceDto {
+    name?: string;
+    provider?: 'google' | 'microsoft' | 'generic_imap';
+    providerConfig?: IngestionCredentials;
+    status?:
+        | 'pending_auth'
+        | 'auth_success'
+        | 'importing'
+        | 'active'
+        | 'paused'
+        | 'error';
 }
 ```
 
 #### Responses
 
--   **Success (`200 OK`):** Returns the complete, updated `IngestionSource` object.
+-   **200 OK:** The updated ingestion source object.
+-   **404 Not Found:** Ingestion source not found.
+-   **500 Internal Server Error:** An unexpected error occurred.
 
--   **Error (`404 Not Found`):** Returned if no source with the given ID exists.
--   **Error (`500 Internal Server Error`):** Indicates a server-side problem.
+### DELETE /api/v1/ingestion/:id
 
----
+Deletes an ingestion source and all associated data.
 
-## 5. Delete Ingestion Source
-
--   **Method:** `DELETE`
--   **Path:** `/:id`
--   **Description:** Permanently removes an ingestion source. This action cannot be undone.
+**Access:** Authenticated
 
 #### URL Parameters
 
--   `id` (string, required): The UUID of the ingestion source to delete.
+| Parameter | Type   | Description                     |
+| :-------- | :----- | :------------------------------ |
+| `id`      | string | The ID of the ingestion source. |
 
 #### Responses
 
--   **Success (`204 No Content`):** Indicates successful deletion with no body content.
+-   **204 No Content:** The ingestion source was deleted successfully.
+-   **404 Not Found:** Ingestion source not found.
+-   **500 Internal Server Error:** An unexpected error occurred.
 
--   **Error (`404 Not Found`):** Returned if no source with the given ID exists.
--   **Error (`500 Internal Server Error`):** Indicates a server-side problem.
+### POST /api/v1/ingestion/:id/import
 
----
+Triggers the initial import process for an ingestion source.
 
-## 6. Trigger Initial Import
-
--   **Method:** `POST`
--   **Path:** `/:id/sync`
--   **Description:** Initiates the email import process for a given source. This is an asynchronous operation that enqueues a background job and immediately returns a response. The status of the source will be updated to `importing`.
+**Access:** Authenticated
 
 #### URL Parameters
 
--   `id` (string, required): The UUID of the ingestion source to sync.
+| Parameter | Type   | Description                     |
+| :-------- | :----- | :------------------------------ |
+| `id`      | string | The ID of the ingestion source. |
 
 #### Responses
 
--   **Success (`202 Accepted`):** Confirms that the sync request has been accepted for processing.
+-   **202 Accepted:** The initial import was triggered successfully.
+-   **404 Not Found:** Ingestion source not found.
+-   **500 Internal Server Error:** An unexpected error occurred.
 
-    ```json
-    {
-        "message": "Initial import triggered successfully."
-    }
-    ```
+### POST /api/v1/ingestion/:id/pause
 
--   **Error (`404 Not Found`):** Returned if no source with the given ID exists.
--   **Error (`500 Internal Server Error`):** Indicates a server-side problem.
+Pauses an active ingestion source.
+
+**Access:** Authenticated
+
+#### URL Parameters
+
+| Parameter | Type   | Description                     |
+| :-------- | :----- | :------------------------------ |
+| `id`      | string | The ID of the ingestion source. |
+
+#### Responses
+
+-   **200 OK:** The updated ingestion source object with a `paused` status.
+-   **404 Not Found:** Ingestion source not found.
+-   **500 Internal Server Error:** An unexpected error occurred.
+
+### POST /api/v1/ingestion/:id/sync
+
+Triggers a forced synchronization for an ingestion source.
+
+**Access:** Authenticated
+
+#### URL Parameters
+
+| Parameter | Type   | Description                     |
+| :-------- | :----- | :------------------------------ |
+| `id`      | string | The ID of the ingestion source. |
+
+#### Responses
+
+-   **202 Accepted:** The force sync was triggered successfully.
+-   **404 Not Found:** Ingestion source not found.
+-   **500 Internal Server Error:** An unexpected error occurred.
