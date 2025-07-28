@@ -40,7 +40,7 @@ Open Archiver is built on a modern, scalable, and maintainable technology stack:
 ### Prerequisites
 
 -   [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
--   A server or local machine with at least 2GB of RAM.
+-   A server or local machine with at least 4GB of RAM (2GB of RAM if you use external Postgres, Redis (Valkey) and Meilisearch instances).
 
 ### Installation
 

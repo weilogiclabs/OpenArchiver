@@ -5,7 +5,7 @@ This guide will walk you through setting up Open Archiver using Docker Compose. 
 ## Prerequisites
 
 -   [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed on your server or local machine.
--   A server or local machine with at least 2GB of RAM.
+-   A server or local machine with at least 4GB of RAM (2GB of RAM if you use external Postgres, Redis (Valkey) and Meilisearch instances).
 -   [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) installed on your server or local machine.
 
 ## 1. Clone the Repository

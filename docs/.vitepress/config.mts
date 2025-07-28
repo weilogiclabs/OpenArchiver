@@ -1,9 +1,15 @@
 import { defineConfig } from 'vitepress';
 
 export default defineConfig({
-    title: 'Open Archiver Documentation',
+    title: 'Open Archiver',
     description: 'Official documentation for the Open Archiver project.',
     themeConfig: {
+        search: {
+            provider: 'local'
+        },
+        logo: {
+            src: './assets/logo-sq.svg'
+        },
         nav: [
             { text: 'Home', link: '/' },
             { text: 'User Guides', link: '/user-guides/email-providers/' }
