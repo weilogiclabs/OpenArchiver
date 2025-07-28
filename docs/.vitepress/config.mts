@@ -8,7 +8,7 @@ export default defineConfig({
             provider: 'local'
         },
         logo: {
-            src: './assets/logo-sq.svg'
+            src: '../assets/logo-sq.svg'
         },
         nav: [
             { text: 'Home', link: '/' },
