@@ -1,5 +1,9 @@
 # Open Archiver
 
+![Docker Compose](https://img.shields.io/badge/Docker%20Compose-up-blue?style=for-the-badge&logo=docker)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-blue?style=for-the-badge&logo=postgresql)
+![Meilisearch](https://img.shields.io/badge/Meilisearch-red?style=for-the-badge&logo=meilisearch)
+
 **A secure, sovereign, and affordable open-source platform for email archiving and eDiscovery.**
 
 Open Archiver provides a robust, self-hosted solution for archiving, storing, indexing, and searching emails from major platforms, including Google Workspace (Gmail), Microsoft 365, as well as generic IMAP-enabled email inboxes. Use Open Archiver to keep a permanent, tamper-proof record of your communication history, free from vendor lock-in.
@@ -78,6 +82,12 @@ After deploying the application, you will need to configure one or more ingestio
 -   [Connecting to Google Workspace](docs/user-guides/email-providers/google-workspace.md)
 -   [Connecting to Microsoft 365](docs/user-guides/email-providers/microsoft-365.md)
 -   [Connecting to a Generic IMAP Server](docs/user-guides/email-providers/imap.md)
+
+## Community
+
+Join our growing community on Discord to ask questions, share your projects, and connect with other developers.
+
+[![Discord](https://img.shields.io/discord/123456789012345678?label=Join%20our%20Discord&logo=discord&style=for-the-badge)](https://discord.gg/Qpv4BmHp)
 
 ## Contributing
 

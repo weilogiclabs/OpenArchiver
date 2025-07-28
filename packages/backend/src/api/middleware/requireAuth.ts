@@ -20,8 +20,8 @@ export const requireAuth = (authService: IAuthService) => {
         }
         const token = authHeader.split(' ')[1];
         try {
-            // use a SUPER_API_KEY for all authentications.
-            if (token === process.env.SUPER_API_KEY) {
+            // use a SUPER_API_KEY for all authentications. add process.env.SUPER_API_KEY conditional check in case user didn't set a SUPER_API_KEY.
+            if (process.env.SUPER_API_KEY && token === process.env.SUPER_API_KEY) {
                 next();
                 return;
             }
