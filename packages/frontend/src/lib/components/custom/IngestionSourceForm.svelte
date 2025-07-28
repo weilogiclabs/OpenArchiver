@@ -2,6 +2,7 @@
 	import type { IngestionSource, CreateIngestionSourceDto } from '@open-archiver/types';
 	import { Button } from '$lib/components/ui/button';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import * as Select from '$lib/components/ui/select';
@@ -25,7 +26,8 @@
 		name: source?.name ?? '',
 		provider: source?.provider ?? 'google_workspace',
 		providerConfig: source?.credentials ?? {
-			type: source?.provider ?? 'google_workspace'
+			type: source?.provider ?? 'google_workspace',
+			secure: true
 		}
 	});
 
@@ -128,6 +130,10 @@
 				bind:value={formData.providerConfig.password}
 				class="col-span-3"
 			/>
+		</div>
+		<div class="grid grid-cols-4 items-center gap-4">
+			<Label for="secure" class="text-right">Use TLS</Label>
+			<Checkbox id="secure" bind:checked={formData.providerConfig.secure} />
 		</div>
 	{/if}
 	<Dialog.Footer>

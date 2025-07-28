@@ -1,8 +1,8 @@
 # Open Archiver
 
-![Docker Compose](https://img.shields.io/badge/Docker%20Compose-up-blue?style=for-the-badge&logo=docker)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-blue?style=for-the-badge&logo=postgresql)
-![Meilisearch](https://img.shields.io/badge/Meilisearch-red?style=for-the-badge&logo=meilisearch)
+![Docker Compose](https://img.shields.io/badge/Docker%20Compose-up-4A4A4A?style=for-the-badge&logo=docker)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-6B6B6B?style=for-the-badge&logo=postgresql)
+![Meilisearch](https://img.shields.io/badge/Meilisearch-2F2F2F?style=for-the-badge&logo=meilisearch)
 
 **A secure, sovereign, and affordable open-source platform for email archiving and eDiscovery.**
 
@@ -10,13 +10,13 @@ Open Archiver provides a robust, self-hosted solution for archiving, storing, in
 
 ## Screenshots
 
-![Open Archiver Preview](assets/screenshots/dashboard-1.png)
+![Open Archiver Preview](assets/screenshots/dashboard.png)
 _Dashboard_
 
-![Open Archiver Preview](assets/screenshots/archived-emails-1.png)
+![Open Archiver Preview](assets/screenshots/archived-emails.png)
 _Archived emails_
 
-![Open Archiver Preview](assets/screenshots/search-1.png)
+![Open Archiver Preview](assets/screenshots/search.png)
 _Full-text search across all your emails and attachments_
 
 ## Key Features
@@ -87,7 +87,7 @@ After deploying the application, you will need to configure one or more ingestio
 
 Join our growing community on Discord to ask questions, share your projects, and connect with other developers.
 
-[![Discord](https://img.shields.io/discord/123456789012345678?label=Join%20our%20Discord&logo=discord&style=for-the-badge)](https://discord.gg/Qpv4BmHp)
+[![Discord](https://img.shields.io/badge/Join%20our%20Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/Qpv4BmHp)
 
 ## Contributing
 
