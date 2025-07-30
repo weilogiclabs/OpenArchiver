@@ -12,7 +12,7 @@ export default defineConfig({
         },
         nav: [
             { text: 'Home', link: '/' },
-            { text: 'User Guides', link: '/user-guides/email-providers/' }
+            { text: 'Github', link: 'https://github.com/LogicLabs-OU/OpenArchiver' }
         ],
         sidebar: [
             {

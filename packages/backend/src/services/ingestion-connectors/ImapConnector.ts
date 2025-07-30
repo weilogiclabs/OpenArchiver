@@ -70,14 +70,18 @@ export class ImapConnector implements IEmailConnector {
     * @returns An async generator that yields each user object.
     */
     public async *listAllUsers(): AsyncGenerator<MailboxUser> {
-        const emails: string[] = [this.returnImapUserEmail()];
-        for (const [index, email] of emails.entries()) {
-            yield {
-                id: String(index),
-                primaryEmail: email,
-                displayName: email
-            };
+        try {
+            const emails: string[] = [this.returnImapUserEmail()];
+            for (const [index, email] of emails.entries()) {
+                yield {
+                    id: String(index),
+                    primaryEmail: email,
+                    displayName: email
+                };
 
+            }
+        } finally {
+            await this.disconnect();
         }
     }
 
@@ -147,17 +151,20 @@ export class ImapConnector implements IEmailConnector {
 
                 const searchCriteria = lastUid ? { uid: `${lastUid + 1}:*` } : { all: true };
 
-                for await (const msg of this.client.fetch(searchCriteria, { envelope: true, source: true, bodyStructure: true, uid: true })) {
-                    if (lastUid && msg.uid <= lastUid) {
-                        continue;
-                    }
+                // Only fetch if the mailbox has messages, to avoid errors on empty mailboxes with some IMAP servers.
+                if (mailbox.exists > 0) {
+                    for await (const msg of this.client.fetch(searchCriteria, { envelope: true, source: true, bodyStructure: true, uid: true })) {
+                        if (lastUid && msg.uid <= lastUid) {
+                            continue;
+                        }
 
-                    if (msg.uid > this.newMaxUids[mailboxPath]) {
-                        this.newMaxUids[mailboxPath] = msg.uid;
-                    }
+                        if (msg.uid > this.newMaxUids[mailboxPath]) {
+                            this.newMaxUids[mailboxPath] = msg.uid;
+                        }
 
-                    if (msg.envelope && msg.source) {
-                        yield await this.parseMessage(msg);
+                        if (msg.envelope && msg.source) {
+                            yield await this.parseMessage(msg);
+                        }
                     }
                 }
             }
@@ -207,5 +214,3 @@ export class ImapConnector implements IEmailConnector {
         };
     }
 }
-
-
