@@ -10,7 +10,6 @@
 	import { api } from '$lib/api.client';
 	import type { IngestionSource, CreateIngestionSourceDto } from '@open-archiver/types';
 	import Badge from '$lib/components/ui/badge/badge.svelte';
-	import type { BadgeVariant } from '$lib/components/ui/badge/badge.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -202,13 +201,20 @@
 </div>
 
 <Dialog.Root bind:open={isDialogOpen}>
-	<Dialog.Content class="sm:max-w-[425px]">
+	<Dialog.Content class="sm:max-w-120 md:max-w-180">
 		<Dialog.Header>
 			<Dialog.Title>{selectedSource ? 'Edit' : 'Create'} Ingestion Source</Dialog.Title>
 			<Dialog.Description>
 				{selectedSource
 					? 'Make changes to your ingestion source here.'
 					: 'Add a new ingestion source to start archiving emails.'}
+				<span
+					>Read <a
+						class="text-primary underline underline-offset-2"
+						target="_blank"
+						href="https://docs.openarchiver.com/user-guides/email-providers/">docs here</a
+					>.</span
+				>
 			</Dialog.Description>
 		</Dialog.Header>
 		<IngestionSourceForm source={selectedSource} onSubmit={handleFormSubmit} />

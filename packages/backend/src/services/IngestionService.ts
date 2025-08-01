@@ -287,10 +287,13 @@ export class IngestionService {
                         })
                         .returning();
 
-                    await db.insert(emailAttachments).values({
-                        emailId: archivedEmail.id,
-                        attachmentId: newAttachment.id
-                    });
+                    await db
+                        .insert(emailAttachments)
+                        .values({
+                            emailId: archivedEmail.id,
+                            attachmentId: newAttachment.id
+                        })
+                        .onConflictDoNothing();
                 }
             }
             // adding to indexing queue

@@ -2,6 +2,7 @@ import type { GenericImapCredentials, EmailObject, EmailAddress, SyncState, Mail
 import type { IEmailConnector } from '../EmailProviderFactory';
 import { ImapFlow } from 'imapflow';
 import { simpleParser, ParsedMail, Attachment, AddressObject } from 'mailparser';
+import { logger } from '../../config/logger';
 
 export class ImapConnector implements IEmailConnector {
     private client: ImapFlow;
@@ -17,12 +18,12 @@ export class ImapConnector implements IEmailConnector {
                 user: this.credentials.username,
                 pass: this.credentials.password,
             },
-            logger: false, // Set to true for verbose logging
+            logger: logger.child({ module: 'ImapFlow' }),
         });
 
         // Handles client-level errors, like unexpected disconnects, to prevent crashes.
         this.client.on('error', (err) => {
-            console.error('IMAP client error:', err);
+            logger.error({ err }, 'IMAP client error');
             this.isConnected = false;
         });
     }
@@ -39,7 +40,7 @@ export class ImapConnector implements IEmailConnector {
             this.isConnected = true;
         } catch (err) {
             this.isConnected = false;
-            console.error('IMAP connection failed:', err);
+            logger.error({ err }, 'IMAP connection failed');
             throw err;
         }
     }
@@ -60,7 +61,7 @@ export class ImapConnector implements IEmailConnector {
             await this.disconnect();
             return true;
         } catch (error) {
-            console.error('Failed to verify IMAP connection:', error);
+            logger.error({ error }, 'Failed to verify IMAP connection');
             return false;
         }
     }
@@ -101,10 +102,10 @@ export class ImapConnector implements IEmailConnector {
                 await this.connect();
                 return await action();
             } catch (err: any) {
-                console.error(`IMAP operation failed on attempt ${attempt}:`, err.message);
+                logger.error({ err, attempt }, `IMAP operation failed on attempt ${attempt}`);
                 this.isConnected = false; // Force reconnect on next attempt
                 if (attempt === maxRetries) {
-                    console.error('IMAP operation failed after all retries.');
+                    logger.error({ err }, 'IMAP operation failed after all retries.');
                     throw err;
                 }
                 // Wait for a short period before retrying

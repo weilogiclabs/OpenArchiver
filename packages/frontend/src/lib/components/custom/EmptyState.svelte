@@ -1,7 +1,5 @@
 <script lang="ts">
-	import { Button, buttonVariants } from '$lib/components/ui/button/index.js';
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import { type Snippet } from 'svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
 
 	let {
 		header,
@@ -35,8 +33,8 @@
 		</svg>
 	</div>
 
-	<h3 class="mt-2 text-sm font-semibold text-gray-900">{header}</h3>
-	<p class="mt-1 text-sm text-gray-500">{text}</p>
+	<h3 class="0 mt-2 text-sm font-semibold">{header}</h3>
+	<p class="mt-1 text-sm">{text}</p>
 	<div>
 		<Button
 			variant="outline"

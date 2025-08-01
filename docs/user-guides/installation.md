@@ -47,7 +47,7 @@ You must change the following placeholder values to secure your instance:
 
 By default, the Docker Compose setup uses local filesystem storage, which is persisted using a Docker volume named `archiver-data`. This is suitable for most use cases.
 
-If you want to use S3-compatible object storage, change the `STORAGE_TYPE` to `s3` and fill in your S3 credentials (`STORAGE_S3_*` variables).
+If you want to use S3-compatible object storage, change the `STORAGE_TYPE` to `s3` and fill in your S3 credentials (`STORAGE_S3_*` variables). When `STORAGE_TYPE` is set to `local`, the S3-related variables are not required.
 
 ### Using External Services
 
@@ -91,16 +91,16 @@ These variables are used by `docker-compose.yml` to configure the services.
 
 #### Storage Settings
 
-| Variable                       | Description                                      | Default Value             |
-| ------------------------------ | ------------------------------------------------ | ------------------------- |
-| `STORAGE_TYPE`                 | The storage backend to use (`local` or `s3`).    | `local`                   |
-| `STORAGE_LOCAL_ROOT_PATH`      | The root path for local file storage.            | `/var/data/open-archiver` |
-| `STORAGE_S3_ENDPOINT`          | The endpoint for S3-compatible storage.          |                           |
-| `STORAGE_S3_BUCKET`            | The bucket name for S3-compatible storage.       |                           |
-| `STORAGE_S3_ACCESS_KEY_ID`     | The access key ID for S3-compatible storage.     |                           |
-| `STORAGE_S3_SECRET_ACCESS_KEY` | The secret access key for S3-compatible storage. |                           |
-| `STORAGE_S3_REGION`            | The region for S3-compatible storage.            |                           |
-| `STORAGE_S3_FORCE_PATH_STYLE`  | Force path-style addressing for S3.              | `false`                   |
+| Variable                       | Description                                                                           | Default Value             |
+| ------------------------------ | ------------------------------------------------------------------------------------- | ------------------------- |
+| `STORAGE_TYPE`                 | The storage backend to use (`local` or `s3`).                                         | `local`                   |
+| `STORAGE_LOCAL_ROOT_PATH`      | The root path for local file storage.                                                 | `/var/data/open-archiver` |
+| `STORAGE_S3_ENDPOINT`          | The endpoint for S3-compatible storage (required if `STORAGE_TYPE` is `s3`).          |                           |
+| `STORAGE_S3_BUCKET`            | The bucket name for S3-compatible storage (required if `STORAGE_TYPE` is `s3`).       |                           |
+| `STORAGE_S3_ACCESS_KEY_ID`     | The access key ID for S3-compatible storage (required if `STORAGE_TYPE` is `s3`).     |                           |
+| `STORAGE_S3_SECRET_ACCESS_KEY` | The secret access key for S3-compatible storage (required if `STORAGE_TYPE` is `s3`). |                           |
+| `STORAGE_S3_REGION`            | The region for S3-compatible storage (required if `STORAGE_TYPE` is `s3`).            |                           |
+| `STORAGE_S3_FORCE_PATH_STYLE`  | Force path-style addressing for S3 (optional).                                        | `false`                   |
 
 #### Security & Authentication
 

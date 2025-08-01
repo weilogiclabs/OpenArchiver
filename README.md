@@ -19,6 +19,12 @@ _Archived emails_
 ![Open Archiver Preview](assets/screenshots/search.png)
 _Full-text search across all your emails and attachments_
 
+## Community
+
+Join our growing community on Discord to ask questions, share your projects, and connect with other developers.
+
+[![Discord](https://img.shields.io/badge/Join%20our%20Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/Qpv4BmHp)
+
 ## Key Features
 
 -   **Universal Ingestion**: Connect to Google Workspace, Microsoft 365, and standard IMAP servers to perform initial bulk imports and maintain continuous, real-time synchronization.
@@ -79,15 +85,9 @@ Open Archiver is built on a modern, scalable, and maintainable technology stack:
 
 After deploying the application, you will need to configure one or more ingestion sources to begin archiving emails. Follow our detailed guides to connect to your email provider:
 
--   [Connecting to Google Workspace](docs/user-guides/email-providers/google-workspace.md)
--   [Connecting to Microsoft 365](docs/user-guides/email-providers/microsoft-365.md)
--   [Connecting to a Generic IMAP Server](docs/user-guides/email-providers/imap.md)
-
-## Community
-
-Join our growing community on Discord to ask questions, share your projects, and connect with other developers.
-
-[![Discord](https://img.shields.io/badge/Join%20our%20Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/Qpv4BmHp)
+-   [Connecting to Google Workspace](https://docs.openarchiver.com/user-guides/email-providers/google-workspace.html)
+-   [Connecting to Microsoft 365](https://docs.openarchiver.com/user-guides/email-providers/imap.html)
+-   [Connecting to a Generic IMAP Server](https://docs.openarchiver.com/user-guides/email-providers/imap.html)
 
 ## Contributing
 
@@ -98,3 +98,5 @@ We welcome contributions from the community!
 -   **Code Contributions**: If you'd like to contribute code, please fork the repository and submit a pull request.
 
 Please read our `CONTRIBUTING.md` file for more details on our code of conduct and the process for submitting pull requests.
+
+## Star History [![Star History Chart](https://api.star-history.com/svg?repos=LogicLabs-OU/OpenArchiver&type=Date)](https://www.star-history.com/#LogicLabs-OU/OpenArchiver&Date)
