@@ -1,6 +1,16 @@
 import { defineConfig } from 'vitepress';
 
 export default defineConfig({
+    head: [
+        [
+            'script',
+            {
+                defer: '',
+                src: 'https://analytics.zenceipt.com/script.js',
+                'data-website-id': '370e5891-040b-46be-844e-ade41b33f253'
+            }
+        ]
+    ],
     title: 'Open Archiver',
     description: 'Official documentation for the Open Archiver project.',
     themeConfig: {
@@ -12,7 +22,8 @@ export default defineConfig({
         },
         nav: [
             { text: 'Home', link: '/' },
-            { text: 'Github', link: 'https://github.com/LogicLabs-OU/OpenArchiver' }
+            { text: 'Github', link: 'https://github.com/LogicLabs-OU/OpenArchiver' },
+            { text: "Website", link: 'https://openarchiver.com/' }
         ],
         sidebar: [
             {

@@ -10,7 +10,7 @@ Open Archiver provides a robust, self-hosted solution for archiving, storing, in
 
 ## Screenshots
 
-![Open Archiver Preview](assets/screenshots/dashboard.png)
+![Open Archiver Preview](assets/screenshots/dashboard-1.png)
 _Dashboard_
 
 ![Open Archiver Preview](assets/screenshots/archived-emails.png)
@@ -21,9 +21,11 @@ _Full-text search across all your emails and attachments_
 
 ## Community
 
-Join our growing community on Discord to ask questions, share your projects, and connect with other developers.
+Join our community to ask questions, share your projects, and connect with other developers.
 
 [![Discord](https://img.shields.io/badge/Join%20our%20Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/Qpv4BmHp)
+
+[![Bluesky](https://img.shields.io/badge/Follow%20us%20on%20Bluesky-0265D4?style=for-the-badge&logo=bluesky&logoColor=white)](https://bsky.app/profile/openarchiver.bsky.social)
 
 ## Key Features
 

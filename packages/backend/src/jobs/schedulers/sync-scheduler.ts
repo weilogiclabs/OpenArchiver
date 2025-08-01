@@ -7,7 +7,7 @@ const scheduleContinuousSync = async () => {
         {},
         {
             repeat: {
-                pattern: '* * * * *', // Every 15 minutes
+                pattern: '* * * * *', // Every 1 minute
             },
         }
     );
