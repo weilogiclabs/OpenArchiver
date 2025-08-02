@@ -16,8 +16,6 @@ _Dashboard_
 ![Open Archiver Preview](assets/screenshots/archived-emails.png)
 _Archived emails_
 
-![Open Archiver Preview](assets/screenshots/search.png)
-_Full-text search across all your emails and attachments_
 
 ## Community
 
