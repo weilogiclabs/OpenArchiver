@@ -7,7 +7,7 @@ export default defineConfig({
             {
                 defer: '',
                 src: 'https://analytics.zenceipt.com/script.js',
-                'data-website-id': '370e5891-040b-46be-844e-ade41b33f253'
+                'data-website-id': '2c8b452e-eab5-4f82-8ead-902d8f8b976f'
             }
         ]
     ],
